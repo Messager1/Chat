@@ -68,6 +68,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const db = firebase.database();
 
   // -----------------------------
+  firebase.database().ref('testConnection').set({ ok: true })
+    .then(() => console.log("Firebase connection OK"))
+    .catch(err => console.error("Firebase connection failed:", err));
+
   // UI references
   // -----------------------------
   const usernameInput = document.getElementById('usernameInput');
