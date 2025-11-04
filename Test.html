@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Public Chat with Firebase</title>
 <style>
-  /* Basic styling (kept simple) */
   body {font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}
   .wrap{width:90%;max-width:900px;background:#0b1220;border-radius:12px;display:grid;grid-template-columns:300px 1fr;overflow:hidden;height:600px;}
   .panel{padding:20px;background:#121b2e;}
@@ -52,9 +51,9 @@
 </div>
 
 <script>
+window.addEventListener('DOMContentLoaded', () => {
   // -----------------------------
-  // 1. Firebase Configuration
-  // Replace with your Firebase project config
+  // Firebase Configuration
   // -----------------------------
   const firebaseConfig = {
     apiKey: "AIzaSyA9-gMEniY_sXFO6jMiZYgoYnAxPhu5oEc",
@@ -69,7 +68,7 @@
   const db = firebase.database();
 
   // -----------------------------
-  // 2. Allowed accounts
+  // Allowed accounts
   // -----------------------------
   const ALLOWED_ACCOUNTS = [
     {name:'Alice', handle:'@alice'},
@@ -79,7 +78,7 @@
   ];
 
   // -----------------------------
-  // 3. UI references
+  // UI references
   // -----------------------------
   const accountsListEl = document.getElementById('accountsList');
   const userView = document.getElementById('userView');
@@ -94,10 +93,9 @@
   let currentUser = null;
 
   // -----------------------------
-  // 4. Render allowed accounts
+  // Render accounts
   // -----------------------------
   function renderAccounts(){
-    const accountsListEl = document.getElementById('accountsList');
     accountsListEl.innerHTML = '';
     ALLOWED_ACCOUNTS.forEach(acc => {
       const div = document.createElement('div');
@@ -109,7 +107,7 @@
   }
 
   // -----------------------------
-  // 5. Sign in/out functions
+  // Sign in/out
   // -----------------------------
   function signIn(acc){
     currentUser = acc;
@@ -145,7 +143,7 @@
   logoutBtn.onclick = signOut;
 
   // -----------------------------
-  // 6. Messaging functions
+  // Messaging
   // -----------------------------
   function sendMessage(){
     const text = msgInput.value.trim();
@@ -175,17 +173,18 @@
   }
 
   // -----------------------------
-  // 7. Listen to Firebase messages
+  // Listen to Firebase messages
   // -----------------------------
   db.ref('messages').on('child_added', snapshot => {
     renderMessage(snapshot.val());
   });
 
   // -----------------------------
-  // 8. Initialize
+  // Initialize
   // -----------------------------
   renderAccounts();
   updateUI();
+});
 </script>
 
 </body>
