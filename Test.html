@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Public Chat with Firebase</title>
+<style>
+  /* Basic styling (kept simple) */
+  body {font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}
+  .wrap{width:90%;max-width:900px;background:#0b1220;border-radius:12px;display:grid;grid-template-columns:300px 1fr;overflow:hidden;height:600px;}
+  .panel{padding:20px;background:#121b2e;}
+  .accounts{display:flex;flex-direction:column;gap:10px;}
+  .acct{padding:10px;border-radius:8px;background:#1b2435;cursor:pointer;}
+  .acct:hover{background:#2d3b50;}
+  .chat-area{display:flex;flex-direction:column;}
+  .chat-header{padding:15px;border-bottom:1px solid #1b2435;}
+  .messages{padding:15px;flex:1;overflow:auto;display:flex;flex-direction:column;gap:8px;}
+  .msg{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.05);}
+  .msg.me{background:rgba(45,212,191,0.1);}
+  .compose{padding:10px;border-top:1px solid #1b2435;display:flex;gap:8px;}
+  .compose input{flex:1;padding:8px;border-radius:8px;border:none;background:#1b2435;color:#e6eef6;}
+  .btn{padding:8px 12px;border:none;border-radius:8px;background:linear-gradient(90deg,#2dd4bf,#60a5fa);color:#05202a;cursor:pointer;}
+</style>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/11.29.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.29.0/firebase-database.js"></script>
+</head>
+<body>
+
+<div class="wrap">
+  <aside class="panel">
+    <h2>Pick a username</h2>
+    <div id="accountsList" class="accounts"></div>
+    <div id="userView" style="display:none;margin-top:20px;">
+      <div id="currentUser"></div>
+      <button id="logoutBtn" class="btn" style="margin-top:10px;">Log out</button>
+    </div>
+  </aside>
+
+  <main class="chat-area">
+    <div class="chat-header">
+      <h3>Public Chat</h3>
+      <div id="headerUser">Not signed in</div>
+    </div>
+    <div class="messages" id="messages"></div>
+    <div class="compose">
+      <input type="text" id="msgInput" placeholder="Sign in to send" disabled />
+      <button id="sendBtn" class="btn" disabled>Send</button>
+    </div>
+  </main>
+</div>
+
+<script>
+  // -----------------------------
+  // 1. Firebase Configuration
+  // Replace with your Firebase project config
+  // -----------------------------
+  const firebaseConfig = {
+    apiKey: "AIzaSyA9-gMEniY_sXFO6jMiZYgoYnAxPhu5oEc",
+    authDomain: "chat-581be.firebaseapp.com",
+    databaseURL: "https://chat-581be-default-rtdb.firebaseio.com/",
+    projectId: "chat-581be",
+    storageBucket: "chat-581be.appspot.com",
+    messagingSenderId: "SENDER_ID",
+    appId: "APP_ID"
+  };
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // -----------------------------
+  // 2. Allowed accounts
+  // -----------------------------
+  const ALLOWED_ACCOUNTS = [
+    {name:'Alice', handle:'@alice'},
+    {name:'Bob', handle:'@bob'},
+    {name:'Charlie', handle:'@charlie'},
+    {name:'Guest1', handle:'@guest1'}
+  ];
+
+  // -----------------------------
+  // 3. UI references
+  // -----------------------------
+  const accountsListEl = document.getElementById('accountsList');
+  const userView = document.getElementById('userView');
+  const currentUserEl = document.getElementById('currentUser');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  const headerUser = document.getElementById('headerUser');
+  const messagesEl = document.getElementById('messages');
+  const msgInput = document.getElementById('msgInput');
+  const sendBtn = document.getElementById('sendBtn');
+
+  let currentUser = null;
+
+  // -----------------------------
+  // 4. Render allowed accounts
+  // -----------------------------
+  function renderAccounts(){
+    accountsListEl.innerHTML = '';
+    ALLOWED_ACCOUNTS.forEach(acc => {
+      const div = document.createElement('div');
+      div.className = 'acct';
+      div.textContent = `${acc.name} (${acc.handle})`;
+      div.onclick = () => signIn(acc);
+      accountsListEl.appendChild(div);
+    });
+  }
+
+  // -----------------------------
+  // 5. Sign in/out functions
+  // -----------------------------
+  function signIn(acc){
+    currentUser = acc;
+    localStorage.setItem('chat_user', JSON.stringify(currentUser));
+    updateUI();
+  }
+
+  function signOut(){
+    currentUser = null;
+    localStorage.removeItem('chat_user');
+    updateUI();
+  }
+
+  function updateUI(){
+    const stored = localStorage.getItem('chat_user');
+    currentUser = stored ? JSON.parse(stored) : null;
+    if(currentUser){
+      accountsListEl.style.display = 'none';
+      userView.style.display = 'block';
+      currentUserEl.textContent = `${currentUser.name} (${currentUser.handle})`;
+      headerUser.textContent = `${currentUser.name} ${currentUser.handle}`;
+      msgInput.disabled = false;
+      sendBtn.disabled = false;
+    } else {
+      accountsListEl.style.display = 'block';
+      userView.style.display = 'none';
+      headerUser.textContent = 'Not signed in';
+      msgInput.disabled = true;
+      sendBtn.disabled = true;
+    }
+  }
+
+  logoutBtn.onclick = signOut;
+
+  // -----------------------------
+  // 6. Messaging functions
+  // -----------------------------
+  function sendMessage(){
+    const text = msgInput.value.trim();
+    if(!text || !currentUser) return;
+    const msg = {
+      userName: currentUser.name,
+      userHandle: currentUser.handle,
+      text,
+      time: new Date().toISOString()
+    };
+    db.ref('messages').push(msg);
+    msgInput.value = '';
+  }
+
+  sendBtn.onclick = sendMessage;
+  msgInput.addEventListener('keydown', e => {
+    if(e.key==='Enter'){ sendMessage(); }
+  });
+
+  function renderMessage(msg){
+    const div = document.createElement('div');
+    div.className = 'msg' + ((currentUser && currentUser.handle===msg.userHandle)?' me':'');
+    const time = new Date(msg.time).toLocaleTimeString();
+    div.innerHTML = `<strong>${msg.userName} ${msg.userHandle}</strong><br>${msg.text}<br><small style="color:#9aa6bd">${time}</small>`;
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  // -----------------------------
+  // 7. Listen to Firebase messages
+  // -----------------------------
+  db.ref('messages').on('child_added', snapshot => {
+    renderMessage(snapshot.val());
+  });
+
+  // -----------------------------
+  // 8. Initialize
+  // -----------------------------
+  renderAccounts();
+  updateUI();
+</script>
+
+</body>
+</html>
