@@ -7,10 +7,7 @@
 <style>
   body {font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}
   .wrap{width:90%;max-width:900px;background:#0b1220;border-radius:12px;display:grid;grid-template-columns:300px 1fr;overflow:hidden;height:600px;}
-  .panel{padding:20px;background:#121b2e;}
-  .accounts{display:flex;flex-direction:column;gap:10px;}
-  .acct{padding:10px;border-radius:8px;background:#1b2435;cursor:pointer;}
-  .acct:hover{background:#2d3b50;}
+  .panel{padding:20px;background:#121b2e;display:flex;flex-direction:column;gap:10px;}
   .chat-area{display:flex;flex-direction:column;}
   .chat-header{padding:15px;border-bottom:1px solid #1b2435;}
   .messages{padding:15px;flex:1;overflow:auto;display:flex;flex-direction:column;gap:8px;}
@@ -29,8 +26,9 @@
 
 <div class="wrap">
   <aside class="panel">
-    <h2>Pick a username</h2>
-    <div id="accountsList" class="accounts"></div>
+    <h2>Enter your username</h2>
+    <input type="text" id="usernameInput" placeholder="Username..." />
+    <button id="loginBtn" class="btn">Login</button>
     <div id="userView" style="display:none;margin-top:20px;">
       <div id="currentUser"></div>
       <button id="logoutBtn" class="btn" style="margin-top:10px;">Log out</button>
@@ -68,19 +66,10 @@ window.addEventListener('DOMContentLoaded', () => {
   const db = firebase.database();
 
   // -----------------------------
-  // Allowed accounts
-  // -----------------------------
-  const ALLOWED_ACCOUNTS = [
-    {name:'Alice', handle:'@alice'},
-    {name:'Bob', handle:'@bob'},
-    {name:'Charlie', handle:'@charlie'},
-    {name:'Guest1', handle:'@guest1'}
-  ];
-
-  // -----------------------------
   // UI references
   // -----------------------------
-  const accountsListEl = document.getElementById('accountsList');
+  const usernameInput = document.getElementById('usernameInput');
+  const loginBtn = document.getElementById('loginBtn');
   const userView = document.getElementById('userView');
   const currentUserEl = document.getElementById('currentUser');
   const logoutBtn = document.getElementById('logoutBtn');
@@ -93,54 +82,42 @@ window.addEventListener('DOMContentLoaded', () => {
   let currentUser = null;
 
   // -----------------------------
-  // Render accounts
+  // Login / logout
   // -----------------------------
-  function renderAccounts(){
-    accountsListEl.innerHTML = '';
-    ALLOWED_ACCOUNTS.forEach(acc => {
-      const div = document.createElement('div');
-      div.className = 'acct';
-      div.textContent = `${acc.name} (${acc.handle})`;
-      div.onclick = () => signIn(acc);
-      accountsListEl.appendChild(div);
-    });
-  }
-
-  // -----------------------------
-  // Sign in/out
-  // -----------------------------
-  function signIn(acc){
-    currentUser = acc;
+  loginBtn.onclick = () => {
+    const name = usernameInput.value.trim();
+    if(!name) return alert("Enter a username!");
+    currentUser = {name, handle:"@" + name.toLowerCase().replace(/\s+/g,'')};
     localStorage.setItem('chat_user', JSON.stringify(currentUser));
     updateUI();
-  }
+  };
 
-  function signOut(){
+  logoutBtn.onclick = () => {
     currentUser = null;
     localStorage.removeItem('chat_user');
     updateUI();
-  }
+  };
 
   function updateUI(){
     const stored = localStorage.getItem('chat_user');
     currentUser = stored ? JSON.parse(stored) : null;
     if(currentUser){
-      accountsListEl.style.display = 'none';
+      usernameInput.style.display = 'none';
+      loginBtn.style.display = 'none';
       userView.style.display = 'block';
       currentUserEl.textContent = `${currentUser.name} (${currentUser.handle})`;
       headerUser.textContent = `${currentUser.name} ${currentUser.handle}`;
       msgInput.disabled = false;
       sendBtn.disabled = false;
     } else {
-      accountsListEl.style.display = 'block';
+      usernameInput.style.display = 'block';
+      loginBtn.style.display = 'inline-block';
       userView.style.display = 'none';
       headerUser.textContent = 'Not signed in';
       msgInput.disabled = true;
       sendBtn.disabled = true;
     }
   }
-
-  logoutBtn.onclick = signOut;
 
   // -----------------------------
   // Messaging
@@ -172,9 +149,6 @@ window.addEventListener('DOMContentLoaded', () => {
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
-  // -----------------------------
-  // Listen to Firebase messages
-  // -----------------------------
   db.ref('messages').on('child_added', snapshot => {
     renderMessage(snapshot.val());
   });
@@ -182,7 +156,6 @@ window.addEventListener('DOMContentLoaded', () => {
   // -----------------------------
   // Initialize
   // -----------------------------
-  renderAccounts();
   updateUI();
 });
 </script>
