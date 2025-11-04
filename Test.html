@@ -50,21 +50,21 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-
   // -----------------------------
   // Firebase Configuration
   // -----------------------------
   const firebaseConfig = {
-    const firebaseConfig = {
     apiKey: "AIzaSyA9-gMEniY_sXFO6jMiZYgoYnAxPhu5oEc",
     authDomain: "chat-581be.firebaseapp.com",
     databaseURL: "https://chat-581be-default-rtdb.firebaseio.com",
     projectId: "chat-581be",
-    storageBucket: "chat-581be.firebasestorage.app",
+    storageBucket: "chat-581be.appspot.com",
     messagingSenderId: "873296181303",
     appId: "1:873296181303:web:a9c0d1bbbd17e0074f27b2"
   };
-  firebase.initializeApp(firebaseConfig);
+
+  // Initialize Firebase
+  const app = firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
   // -----------------------------
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -----------------------------
   loginBtn.addEventListener('click', () => {
     const name = usernameInput.value.trim();
-    if(!name) return alert("Enter a username!");
+    if (!name) return alert("Enter a username!");
     currentUser = { name, handle:"@" + name.toLowerCase().replace(/\s+/g,'') };
     localStorage.setItem('chat_user', JSON.stringify(currentUser));
     updateUI();
@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // -----------------------------
-  // Initialize
+  // Initialize UI
   // -----------------------------
   updateUI();
 });
