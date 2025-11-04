@@ -18,10 +18,9 @@
   .btn{padding:8px 12px;border:none;border-radius:8px;background:linear-gradient(90deg,#2dd4bf,#60a5fa);color:#05202a;cursor:pointer;}
 </style>
 
-<!-- Firebase SDKs -->
+<!-- Firebase SDK v11.10.0 -->
 <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js"></script>
-
 </head>
 <body>
 
@@ -65,16 +64,17 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Initialize Firebase
-  const app = firebase.initializeApp(firebaseConfig);
+  firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
   // -----------------------------
-  firebase.database().ref('testConnection').set({ ok: true })
+  // Test Firebase connection
+  // -----------------------------
+  db.ref('testConnection').set({ ok: true })
     .then(() => console.log("Firebase connection OK"))
     .catch(err => console.error("Firebase connection failed:", err));
 
   // UI references
-  // -----------------------------
   const usernameInput = document.getElementById('usernameInput');
   const loginBtn = document.getElementById('loginBtn');
   const userView = document.getElementById('userView');
