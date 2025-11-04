@@ -97,6 +97,7 @@
   // 4. Render allowed accounts
   // -----------------------------
   function renderAccounts(){
+    const accountsListEl = document.getElementById('accountsList');
     accountsListEl.innerHTML = '';
     ALLOWED_ACCOUNTS.forEach(acc => {
       const div = document.createElement('div');
