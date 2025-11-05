@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Simple Public Chat</title>
@@ -17,14 +15,13 @@
   }
 
   .wrap {
-    width: 90%;
-    max-width: 900px;
+    width: 100%;
     background: #0b1220;
     border-radius: 12px;
     display: grid;
     grid-template-columns: 300px 1fr;
     overflow: hidden;
-    height: 600px;
+    height: 100%;
   }
 
   .panel {
@@ -112,11 +109,11 @@
 
 <div class="wrap">
   <aside class="panel">
-    <h2>Enter your username</h2>
-    <input type="text" id="usernameInput" placeholder="Username..." />
-    <button id="loginBtn" class="btn">Login</button>
-    <div id="userView" style="display:none;margin-top:20px;">
-      <div id="currentUser"></div>
+    <h2 id="Instruct">Enter your username</h2>
+    <input type="text" id="usernameInput" placeholder="Username..." style="display: none;">
+    <button id="loginBtn" class="btn" style="display: none;">Login</button>
+    <div id="userView" style="display: block; margin-top: 20px;">
+      <div id="currentUser">Sam (@sam)</div>
       <button id="logoutBtn" class="btn" style="margin-top:10px;">Log out</button>
     </div>
   </aside>
@@ -124,12 +121,12 @@
   <main class="chat-area">
     <div class="chat-header">
       <h3>Public Chat</h3>
-      <div id="headerUser">Not signed in</div>
+      <div id="headerUser">Sam @sam</div>
     </div>
-    <div class="messages" id="messages"></div>
+    <div class="messages" id="messages"><div class="msg me"><strong>Sam @sam</strong><br>If you can see this then you like men<br><small style="color:#9aa6bd">20:53:38</small></div><div class="msg"><strong>ILOVEMEN67 @ilovemen67</strong><br>oops-busted<br><small style="color:#9aa6bd">21:02:00</small></div><div class="msg me"><strong>Sam @sam</strong><br>Hmm. You may need a password Sam<br><small style="color:#9aa6bd">21:34:38</small></div><div class="msg me"><strong>Sam @sam</strong><br>Too easy to steal your account<br><small style="color:#9aa6bd">21:34:54</small></div><div class="msg"><strong>rhodri @rhodri</strong><br>jacob cmells<br><small style="color:#9aa6bd">09:05:39</small></div><div class="msg"><strong>rhodri @rhodri</strong><br>jacob smells bad<br><small style="color:#9aa6bd">09:06:11</small></div><div class="msg me"><strong>Sam @sam</strong><br>awdawd<br><small style="color:#9aa6bd">17:32:15</small></div></div>
     <div class="compose">
-      <input type="text" id="msgInput" placeholder="Sign in to send" disabled />
-      <button id="sendBtn" class="btn" disabled>Send</button>
+      <input type="text" id="msgInput" placeholder="Sign in to send">
+      <button id="sendBtn" class="btn">Send</button>
     </div>
   </main>
 </div>
@@ -199,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
       userView.style.display = 'block';
       currentUserEl.textContent = `${currentUser.name} (${currentUser.handle})`;
       headerUser.textContent = `${currentUser.name} ${currentUser.handle}`;
+      Instruct.textContent = `Hello ${currentUser.name}`
       msgInput.disabled = false;
       sendBtn.disabled = false;
     } else {
@@ -206,6 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
       loginBtn.style.display = 'inline-block';
       userView.style.display = 'none';
       headerUser.textContent = 'Not signed in';
+      Instruct.textContent = `Enter your username`
       msgInput.disabled = true;
       sendBtn.disabled = true;
     }
@@ -255,5 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-</body>
-</html>
+
+
+</body></html>
