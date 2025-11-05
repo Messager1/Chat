@@ -5,25 +5,100 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Simple Public Chat</title>
 <style>
-  body {font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}
-  .wrap{width:90%;max-width:900px;background:#0b1220;border-radius:12px;display:grid;grid-template-columns:300px 1fr;overflow:hidden;height:600px;}
-  .panel{padding:20px;background:#121b2e;display:flex;flex-direction:column;gap:10px;}
-  .chat-area{display:flex;flex-direction:column;}
-  .chat-header{padding:15px;border-bottom:1px solid #1b2435;}
+  body {
+    font-family: sans-serif;
+    background: #0f1724;
+    color: #e6eef6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+
+  .wrap {
+    width: 90%;
+    max-width: 900px;
+    background: #0b1220;
+    border-radius: 12px;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    overflow: hidden;
+    height: 600px;
+  }
+
+  .panel {
+    padding: 20px;
+    background: #121b2e;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .chat-area {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .chat-header {
+    padding: 15px;
+    border-bottom: 1px solid #1b2435;
+    flex-shrink: 0;
+  }
+
+  /* ✅ FIXED: scrollable message area */
   .messages {
-  padding: 15px;
-  flex: 1;
-  overflow-y: auto; /* scroll vertically */
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 100%; /* prevents it from pushing input out */
-}
-  .msg{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.05);}
-  .msg.me{background:rgba(45,212,191,0.1);}
-  .compose{padding:10px;border-top:1px solid #1b2435;display:flex;gap:8px;}
-  .compose input{flex:1;padding:8px;border-radius:8px;border:none;background:#1b2435;color:#e6eef6;}
-  .btn{padding:8px 12px;border:none;border-radius:8px;background:linear-gradient(90deg,#2dd4bf,#60a5fa);color:#05202a;cursor:pointer;}
+    padding: 15px;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 100%;
+  }
+
+  .msg {
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    word-wrap: break-word;
+  }
+
+  .msg.me {
+    background: rgba(45, 212, 191, 0.1);
+  }
+
+  .compose {
+    padding: 10px;
+    border-top: 1px solid #1b2435;
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    background: #0b1220;
+  }
+
+  .compose input {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    border: none;
+    background: #1b2435;
+    color: #e6eef6;
+  }
+
+  .btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #2dd4bf, #60a5fa);
+    color: #05202a;
+    cursor: pointer;
+  }
+
+  .btn:hover {
+    opacity: 0.9;
+  }
 </style>
 
 <!-- Firebase SDK v11.10.0 -->
