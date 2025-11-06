@@ -151,13 +151,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const db = firebase.database();
 
   // -----------------------------
-  // Test Firebase connection
+  // Approved users list
   // -----------------------------
-  db.ref('testConnection').set({ ok: true })
-    .then(() => console.log("Firebase connection OK"))
-    .catch(err => console.error("Firebase connection failed:", err));
+  const approvedUsers = {
+    "Samuel": "@19195",
+    "Jack": "@18976",
+    "Isaac": "@19051",
+    "Freddie": "@19070",
+    "Sean": "@19050",
+    "Rhodri": "@19191",
+    "Otis": "@19135",
+    "Oscar": "@19185",
+    "Rowan": "@19095",
+    "Nathan": "@19190",
+    "Jacob": "@19000",
+    "Ben": "@19043"
+  };
 
+  // -----------------------------
   // UI references
+  // -----------------------------
   const usernameInput = document.getElementById('usernameInput');
   const loginBtn = document.getElementById('loginBtn');
   const userView = document.getElementById('userView');
@@ -176,8 +189,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // -----------------------------
   loginBtn.addEventListener('click', () => {
     const name = usernameInput.value.trim();
-    if (!name) return alert("Enter a username!");
-    currentUser = { name, handle:"@" + name.toLowerCase().replace(/\s+/g,'') };
+    if (!name) return alert("Enter your first name.");
+    if (!approvedUsers[name]) return alert("You are not on the approved user list!");
+
+    const handle = approvedUsers[name];
+    currentUser = { name, handle };
     localStorage.setItem('chat_user', JSON.stringify(currentUser));
     updateUI();
   });
@@ -192,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const stored = localStorage.getItem('chat_user');
     currentUser = stored ? JSON.parse(stored) : null;
 
-    if(currentUser){
+    if (currentUser) {
       usernameInput.style.display = 'none';
       loginBtn.style.display = 'none';
       userView.style.display = 'block';
@@ -223,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -----------------------------
   function sendMessage() {
     const text = msgInput.value.trim();
-    if(!text || !currentUser) return;
+    if (!text || !currentUser) return;
     const msg = {
       userName: currentUser.name,
       userHandle: currentUser.handle,
@@ -236,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   sendBtn.addEventListener('click', sendMessage);
   msgInput.addEventListener('keydown', e => {
-    if(e.key === 'Enter') sendMessage();
+    if (e.key === 'Enter') sendMessage();
   });
 
   function renderMessage(msg) {
@@ -263,6 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateUI();
 });
 </script>
+
 
 
 
