@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
       for (const name in approvedUsers) {
         userSetup[name] = {
           handle: approvedUsers[name],
-          password: "password1"
+          password: "password3"
         };
       }
       db.ref('users').set(userSetup);
