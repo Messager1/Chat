@@ -43,6 +43,9 @@
     padding: 15px;
     border-bottom: 1px solid #1b2435;
     flex-shrink: 0;
+    display: grid;
+    grid-template-areas:
+    "header content";
   }
 
   /* ✅ The key fix */
@@ -97,6 +100,15 @@
   .btn:hover {
     opacity: 0.9;
   }
+  
+  #header {
+  	grid-area: header;
+  }
+  
+  #rightInfo {
+  	text-align: center;
+    grid-area: content; 
+}
 </style>
 
 
@@ -121,8 +133,11 @@
 
   <main class="chat-area">
     <div class="chat-header">
+      <div id="header">
       <h3>CompSci Chat</h3>
       <div id="headerUser">Sam @sam</div>
+      </div>
+      <div id="rightInfo" style="display: none;">Not logged In</div>
     </div>
     <div class="messages" id="messages"></div>
     <div class="compose">
@@ -175,6 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginBtn = document.getElementById('loginBtn');
   const logoutBtn = document.getElementById('logoutBtn');
   const currentUserEl = document.getElementById('currentUser');
+  const currentUserRight = document.getElementById('rightInfo');
   const headerUser = document.getElementById('headerUser');
   const Instruct = document.getElementById('Instruct');
   const msgInput = document.getElementById('msgInput');
@@ -252,10 +268,13 @@ document.addEventListener('DOMContentLoaded', () => {
       passwordInput.style.display = 'none';
       loginBtn.style.display = 'none';
       userView.style.display = 'block';
+      currentUserRight.style.display = 'block';
       currentUserEl.innerHTML = `
         ${currentUser.name} (${currentUser.handle})
-        <br><br>
+      `;
+      currentUserRight.innerHTML = `
         <input type="text" id="newPass" placeholder="New password">
+        <br>
         <button class="btn" id="changePassBtn">Change Password</button>
       `;
       headerUser.textContent = `${currentUser.name} ${currentUser.handle}`;
@@ -269,6 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       usernameInput.style.display = 'block';
       passwordInput.style.display = 'block';
+      currentUserRight.style.display = 'none';
       loginBtn.style.display = 'inline-block';
       userView.style.display = 'none';
       headerUser.textContent = 'Not signed in';
