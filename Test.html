@@ -368,16 +368,37 @@ document.addEventListener('DOMContentLoaded', () => {
   // -----------------------------
   
   function changePassword() {
-    const pop = document.getElementById("myPop");
-    pop.style.display = "block";
-  }
-  
-  function changePassword2() {
-    const newPass = document.getElementById('newPass').value.trim();
-    if (!newPass) return alert("Enter a new password!");
-    db.ref('users/' + currentUser.name + '/password').set(newPass)
-      .then(() => alert("Password changed successfully!"))
-      .catch(err => console.error(err));
+      const pop = document.getElementById("myPop");
+	  pop.style.display = "block";
+      // Add listener for Set Password button inside modal
+      const setBtn = document.getElementById('changePassBtn2');
+      setBtn.onclick = async () => {
+          const currPassInput = document.getElementById('currPass').value.trim();
+          const newPassInput = document.getElementById('newPass').value.trim();
+
+          if (!currPassInput || !newPassInput) {
+              return alert("Please fill in both fields!");
+          }
+
+          // Get current password from database
+          const userRef = db.ref('users/' + currentUser.name);
+          const snapshot = await userRef.once('value');
+          const userData = snapshot.val();
+
+          if (currPassInput !== userData.password) {
+              return alert("Current password is incorrect!");
+          }
+
+          // Update password in Firebase
+          userRef.update({ password: newPassInput })
+              .then(() => {
+                  alert("Password changed successfully!");
+                  document.getElementById('currPass').value = '';
+                  document.getElementById('newPass').value = '';
+                  pop.style.display = "none";
+              })
+              .catch(err => console.error(err));
+      };
   }
   
   var span = document.getElementsByClassName("close")[0];
