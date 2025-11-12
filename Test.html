@@ -373,38 +373,46 @@ document.addEventListener('DOMContentLoaded', () => {
   // -----------------------------
   
   function changePassword() {
-      const pop = document.getElementById("myPop");
+	  const pop = document.getElementById("myPop");
 	  pop.style.display = "block";
-      // Add listener for Set Password button inside modal
-      const setBtn = document.getElementById('changePassBtn2');
-      setBtn.onclick = async () => {
-          const currPassInput = document.getElementById('currPass').value.trim();
-          const newPassInput = document.getElementById('newPass').value.trim();
+	
+	  // Attach a one-time listener for the "Set Password" button inside modal
+	  const setBtn = document.getElementById('changePassBtn2');
+	  setBtn.onclick = async () => {
+	    const currPass = document.getElementById('currPass').value.trim();
+	    const newPass = document.getElementById('newPass').value.trim();
+	
+	    if (!currPass || !newPass) {
+	      return alert("Please fill in both fields!");
+	    }
+	
+	    try {
+	      const user = firebase.auth().currentUser;
+	      if (!user) {
+	        alert("You must be logged in to change your password!");
+	        return;
+	      }
+	
+	      const email = `${currentUser.name.toLowerCase()}@compsci.chat`;
+	
+	      // Reauthenticate with current password
+	      const cred = firebase.auth.EmailAuthProvider.credential(email, currPass);
+	      await user.reauthenticateWithCredential(cred);
+	
+	      // Update password
+	      await user.updatePassword(newPass);
+	
+	      alert("Password changed successfully!");
+	      document.getElementById('currPass').value = '';
+	      document.getElementById('newPass').value = '';
+	      pop.style.display = "none";
+	    } catch (err) {
+	      alert("Error: " + err.message);
+	      console.error(err);
+	    }
+	  };
+	}
 
-          if (!currPassInput || !newPassInput) {
-              return alert("Please fill in both fields!");
-          }
-
-          // Get current password from database
-          const userRef = db.ref('users/' + currentUser.name);
-          const snapshot = await userRef.once('value');
-          const userData = snapshot.val();
-
-          if (currPassInput !== userData.password) {
-              return alert("Current password is incorrect!");
-          }
-
-          // Update password in Firebase
-          userRef.update({ password: newPassInput })
-              .then(() => {
-                  alert("Password changed successfully!");
-                  document.getElementById('currPass').value = '';
-                  document.getElementById('newPass').value = '';
-                  pop.style.display = "none";
-              })
-              .catch(err => console.error(err));
-      };
-  }
   
   var span = document.getElementsByClassName("close")[0];
 
