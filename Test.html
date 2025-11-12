@@ -232,20 +232,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // Approved users (names + handles)
   // -----------------------------
   const approvedUsers = {
-    "Samuel": "@19195",
-    "Jack": "@18976",
-    "Isaac": "@19051",
-    "Freddie": "@19070",
-    "Sean": "@19050",
-    "Rhodri": "@19191",
-    "Otis": "@19135",
-    "Oscar": "@19185",
-    "Rowan": "@19095",
-    "Nathan": "@19190",
-    "Jacob": "@19000",
-    "Ben": "@19043"
+	"Samuel": "19195@churchill-academy.org",
+	"Jack": "18976@churchill-academy.org",
+	"Isaac": "19051@churchill-academy.org",
+	"Freddie": "19070@churchill-academy.org",
+	"Sean": "19050@churchill-academy.org",
+	"Rhodri": "19191@churchill-academy.org",
+	"Otis": "19135@churchill-academy.org",
+	"Oscar": "19185@churchill-academy.org",
+	"Rowan": "19095@churchill-academy.org",
+	"Nathan": "19190@churchill-academy.org",
+	"Jacob": "19000@churchill-academy.org",
+	"Ben": "19043@churchill-academy.org",
+	"Doug": "18972@churchill-academy.org"
   };
-
   // UI elements
   const usernameInput = document.getElementById('usernameInput');
   const passwordInput = document.getElementById('passwordInput');
@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	
 	  if (!name || !pass) return alert("Enter your username and password");
 	
-	  const email = `${name.toLowerCase()}@compsci.chat`; // Create fake email from name
+	  const email = approvedUsers[name];
 	
 	  try {
 	    // Try logging in first
