@@ -268,37 +268,43 @@ document.addEventListener('DOMContentLoaded', () => {
   // -----------------------------
   // Login
   // -----------------------------
-  loginBtn.addEventListener('click', async () => {
-    const name = usernameInput.value.trim();
-    const pass = passwordInput.value.trim();
-    if (!name || !pass) return alert("Enter your username and password");
+  // -----------------------------
+// Login
+// -----------------------------
+loginBtn.addEventListener('click', async () => {
+  const name = usernameInput.value.trim();
+  const pass = passwordInput.value.trim();
+  if (!name || !pass) return alert("Enter your username and password");
 
-    const email = approvedUsers[name];
-    if (!email) return alert("You are not on the approved user list!");
+  const email = approvedUsers[name];
+  if (!email) return alert("You are not on the approved user list!");
 
-    try {
-      // Sign in
-      await firebase.auth().signInWithEmailAndPassword(email, pass);
-    } catch (err) {
-      if (err.code === 'auth/user-not-found') {
-        // Auto-create account for approved users
-        await firebase.auth().createUserWithEmailAndPassword(email, pass);
-        const user = firebase.auth().currentUser;
-        // Store initial user data under UID
-        await db.ref('users/' + user.uid).set({
-          name,
-          handle: email
-        });
-      } else {
-        return alert(err.message);
-      }
+  try {
+    // Try signing in
+    await firebase.auth().signInWithEmailAndPassword(email, pass);
+  } catch (err) {
+    if (err.code === 'auth/user-not-found') {
+      // Auto-create account
+      await firebase.auth().createUserWithEmailAndPassword(email, pass);
+      const user = firebase.auth().currentUser;
+      await db.ref('users/' + user.uid).set({
+        name,
+        handle: email
+      });
+    } else if (err.code === 'auth/wrong-password') {
+      // Custom error message
+      return alert(`Why is diddyblud trying to log into ${name}'s account`);
+    } else {
+      return alert(err.message);
     }
+  }
 
-    const user = firebase.auth().currentUser;
-    currentUser = { uid: user.uid, name, handle: email };
-    localStorage.setItem('chat_user', JSON.stringify(currentUser));
-    updateUI();
-  });
+  const user = firebase.auth().currentUser;
+  currentUser = { uid: user.uid, name, handle: email };
+  localStorage.setItem('chat_user', JSON.stringify(currentUser));
+  updateUI();
+});
+
 
   // -----------------------------
   // Logout
