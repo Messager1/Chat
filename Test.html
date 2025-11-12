@@ -394,7 +394,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	        return;
 	      }
 	
-	      const email = `${currentUser.name.toLowerCase()}@compsci.chat`;
+	      const email = currentUser.handle; // handle stores the actual email
+
 	
 	      // Reauthenticate with current password
 	      const cred = firebase.auth.EmailAuthProvider.credential(email, currPass);
