@@ -282,31 +282,36 @@ document.addEventListener('DOMContentLoaded', () => {
   // Login
   // -----------------------------
   loginBtn.addEventListener('click', async () => {
-    const name = usernameInput.value.trim();
-    const pass = passwordInput.value.trim();
-
-    if (!name) return alert("Enter your first name.");
-    if (!approvedUsers[name]) return alert("You are not on the approved user list!");
-
-    const userRef = db.ref('users/' + name);
-    const snapshot = await userRef.once('value');
-
-    if (!snapshot.exists()) {
-      alert("User not found in database.");
-      return;
-    }
-
-    const userData = snapshot.val();
-
-    if (pass !== userData.password) {
-      alert(`Why is Diddyblud trying to log into ${name}'s account`);
-      return;
-    }
-
-    currentUser = { name, handle: approvedUsers[name] };
-    localStorage.setItem('chat_user', JSON.stringify(currentUser));
-    updateUI();
-  });
+	  const name = usernameInput.value.trim();
+	  const pass = passwordInput.value.trim();
+	
+	  if (!name || !pass) return alert("Enter your username and password");
+	
+	  const email = `${name.toLowerCase()}@compsci.chat`; // Create fake email from name
+	
+	  try {
+	    // Try logging in first
+	    await firebase.auth().signInWithEmailAndPassword(email, pass);
+	  } catch (err) {
+	    if (err.code === 'auth/user-not-found') {
+	      // Auto-create account for approved users
+	      if (!approvedUsers[name]) return alert("You're not on the approved user list!");
+	      await firebase.auth().createUserWithEmailAndPassword(email, pass);
+	      await firebase.database().ref('users/' + name).set({
+	        handle: approvedUsers[name],
+	        name
+	      });
+	    } else {
+	      alert(err.message);
+	      return;
+	    }
+	  }
+	
+	  const user = firebase.auth().currentUser;
+	  currentUser = { name, handle: approvedUsers[name], uid: user.uid };
+	  localStorage.setItem('chat_user', JSON.stringify(currentUser));
+	  updateUI();
+	});
 
   // -----------------------------
   // Logout
