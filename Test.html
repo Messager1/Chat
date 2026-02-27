@@ -96,6 +96,22 @@ document.addEventListener('DOMContentLoaded', () => {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
+  const approvedUsers = {
+    "Samuel": "19195@churchill-academy.org",
+    "Jack": "18976@churchill-academy.org",
+    "Isaac": "19051@churchill-academy.org",
+    "Freddie": "19070@churchill-academy.org",
+    "Sean": "19050@churchill-academy.org",
+    "Rhodri": "19191@churchill-academy.org",
+    "Otis": "19135@churchill-academy.org",
+    "Oscar": "19185@churchill-academy.org",
+    "Rowan": "19095@churchill-academy.org",
+    "Nathan": "19190@churchill-academy.org",
+    "Jacob": "19000@churchill-academy.org",
+    "Ben": "19043@churchill-academy.org",
+    "Doug": "18972@churchill-academy.org"
+  };
+
   // Elements
   const usernameInput = document.getElementById('usernameInput');
   const passwordInput = document.getElementById('passwordInput');
