@@ -84,8 +84,9 @@ body {font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justi
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+
   const firebaseConfig = {
-    apiKey: "AIzaSyA9-gMEniY_sXFO6jMiZYgoYnAxPhu5oEc",
+    apiKey: "YOUR_API_KEY",
     authDomain: "chat-581be.firebaseapp.com",
     databaseURL: "https://chat-581be-default-rtdb.firebaseio.com",
     projectId: "chat-581be",
@@ -93,25 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
     messagingSenderId: "873296181303",
     appId: "1:873296181303:web:a9c0d1bbbd17e0074f27b2"
   };
+
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
-
-  const approvedUsers = {
-    "Samuel": "19195@churchill-academy.org",
-    "Jack": "18976@churchill-academy.org",
-    "Isaac": "19051@churchill-academy.org",
-    "Freddie": "19070@churchill-academy.org",
-    "Sean": "19050@churchill-academy.org",
-    "Rhodri": "19191@churchill-academy.org",
-    "Otis": "19135@churchill-academy.org",
-    "Oscar": "19185@churchill-academy.org",
-    "Rowan": "19095@churchill-academy.org",
-    "Nathan": "19190@churchill-academy.org",
-    "Jacob": "19000@churchill-academy.org",
-    "Ben": "19043@churchill-academy.org",
-    "Doug": "18972@churchill-academy.org"
-  };
-
   // Elements
   const usernameInput = document.getElementById('usernameInput');
   const passwordInput = document.getElementById('passwordInput');
@@ -133,81 +118,109 @@ document.addEventListener('DOMContentLoaded', () => {
   const num1 = document.getElementById('num1');
   const signupBtn2 = document.getElementById('signupBtn2');
 
-  const myPop = document.getElementById('myPop');
-  const closePop = document.getElementById('closePop');
-  const currPass = document.getElementById('currPass');
-  const newPass = document.getElementById('newPass');
-  const changePassBtn2 = document.getElementById('changePassBtn2');
-
   let currentUser = null;
 
   // -------------------
-  // Open/close modals
-  // -------------------
-  signupBtn.addEventListener('click', () => { myPop2.style.display = "block"; });
-  closePop2.addEventListener('click', () => { myPop2.style.display = "none"; });
-  closePop.addEventListener('click', () => { myPop.style.display = "none"; });
-
-  function openChangePassword() {
-    currPass.value = '';
-    newPass.value = '';
-    myPop.style.display = 'block';
-  }
-
-  // -------------------
-  // Sign-up logic
+  // Sign-up with email verification
   // -------------------
   signupBtn2.addEventListener('click', async () => {
+
     const u = username1.value.trim();
     const p = password1.value.trim();
     const n = num1.value.trim();
+
     if (!u || !p || !n) return alert("Fill all fields");
 
     const email = n.toLowerCase() + "@churchill-academy.org";
 
     try {
-      await firebase.auth().createUserWithEmailAndPassword(email, p);
-      const user = firebase.auth().currentUser;
-      await db.ref('users/' + user.uid).set({ name: u, handle: email });
-      currentUser = { uid: user.uid, name: u, handle: email };
-      localStorage.setItem('chat_user', JSON.stringify(currentUser));
+      const cred = await firebase.auth().createUserWithEmailAndPassword(email, p);
+      const user = cred.user;
+
+      // SEND VERIFICATION EMAIL
+      await user.sendEmailVerification();
+      alert("Verification email sent! Please check your inbox before logging in.");
+
+      await db.ref('users/' + user.uid).set({
+        name: u,
+        handle: email
+      });
+
+      await firebase.auth().signOut();
       myPop2.style.display = "none";
-      updateUI();
+
     } catch (err) {
       alert(err.message);
     }
   });
 
   // -------------------
-  // Login logic
+  // Login logic (verification enforced)
   // -------------------
   loginBtn.addEventListener('click', async () => {
+
     const name = usernameInput.value.trim();
     const pass = passwordInput.value.trim();
-    if (!name || !pass) return alert("Enter your username and password");
+
+    if (!name || !pass) return alert("Enter username and password");
 
     const email = approvedUsers[name];
-    if (!email) return alert("You are not on the approved user list!");
+    if (!email) return alert("You are not approved!");
 
     try {
-      await firebase.auth().signInWithEmailAndPassword(email, pass);
-    } catch (err) {
-      if (err.code === 'auth/user-not-found') {
-        // Auto-create account
-        await firebase.auth().createUserWithEmailAndPassword(email, pass);
-        const user = firebase.auth().currentUser;
-        await db.ref('users/' + user.uid).set({ name, handle: email });
-      } else if (err.code === 'auth/wrong-password') {
-        return alert(`Why is diddyblud trying to log into ${name}'s account`);
-      } else {
-        return alert(err.message);
-      }
-    }
 
-    const user = firebase.auth().currentUser;
-    currentUser = { uid: user.uid, name, handle: email };
-    localStorage.setItem('chat_user', JSON.stringify(currentUser));
-    updateUI();
+      let userCredential;
+
+      try {
+        userCredential = await firebase.auth().signInWithEmailAndPassword(email, pass);
+      } catch (err) {
+
+        if (err.code === 'auth/user-not-found') {
+          // Auto create account
+          userCredential = await firebase.auth().createUserWithEmailAndPassword(email, pass);
+          await userCredential.user.sendEmailVerification();
+          alert("Account created! Verification email sent. Please verify before logging in.");
+          await firebase.auth().signOut();
+          return;
+        }
+
+        if (err.code === 'auth/wrong-password') {
+          return alert("Wrong password");
+        }
+
+        throw err;
+      }
+
+      const user = userCredential.user;
+
+      // RELOAD USER TO CHECK VERIFICATION
+      await user.reload();
+
+      if (!user.emailVerified) {
+        const resend = confirm("Email not verified. Resend verification email?");
+        if (resend) {
+          await user.sendEmailVerification();
+          alert("Verification email resent!");
+        }
+        await firebase.auth().signOut();
+        return;
+      }
+
+      const snap = await db.ref('users/' + user.uid).once('value');
+      const profile = snap.val();
+
+      currentUser = {
+        uid: user.uid,
+        name: profile.name,
+        handle: profile.handle
+      };
+
+      localStorage.setItem('chat_user', JSON.stringify(currentUser));
+      updateUI();
+
+    } catch (err) {
+      alert(err.message);
+    }
   });
 
   // -------------------
@@ -221,32 +234,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // -------------------
-  // Change Password logic
-  // -------------------
-  changePassBtn2.addEventListener('click', async () => {
-    const curr = currPass.value.trim();
-    const neu = newPass.value.trim();
-    if (!curr || !neu) return alert("Please fill both fields");
-
-    try {
-      const user = firebase.auth().currentUser;
-      if (!user) return alert("You must be logged in to change your password");
-
-      const cred = firebase.auth.EmailAuthProvider.credential(currentUser.handle, curr);
-      await user.reauthenticateWithCredential(cred);
-      await user.updatePassword(neu);
-      alert("Password changed successfully!");
-      myPop.style.display = 'none';
-    } catch (err) {
-      alert("Error: " + (err.message || err));
-      console.error(err);
-    }
-  });
-
-  // -------------------
-  // UI update
+  // UI Update
   // -------------------
   function updateUI() {
+
     const stored = localStorage.getItem('chat_user');
     currentUser = stored ? JSON.parse(stored) : null;
 
@@ -257,17 +248,10 @@ document.addEventListener('DOMContentLoaded', () => {
       loginBtn.style.display = 'none';
       userView.style.display = 'block';
       currentUserEl.textContent = `${currentUser.name} (${currentUser.handle})`;
-      headerUser.textContent = `${currentUser.name} ${currentUser.handle}`;
+      headerUser.textContent = `${currentUser.name}`;
       Instruct.textContent = `Hello ${currentUser.name}`;
       msgInput.disabled = false;
       sendBtn.disabled = false;
-
-      // Add change password button
-      const right = document.getElementById('rightInfo');
-      right.style.display = 'block';
-      right.innerHTML = `<button class="btn" id="changePassBtn">Change Password</button>`;
-      document.getElementById('changePassBtn').onclick = openChangePassword;
-
     } else {
       usernameInput.style.display = 'block';
       passwordInput.style.display = 'block';
@@ -278,69 +262,11 @@ document.addEventListener('DOMContentLoaded', () => {
       Instruct.textContent = 'Enter your username';
       msgInput.disabled = true;
       sendBtn.disabled = true;
-      document.getElementById('rightInfo').style.display = 'none';
-    }
-
-    loadMessages();
-  }
-
-  // -------------------
-  // Messaging
-  // -------------------
-  function renderMessage(msg) {
-    if (!msg) return;
-    const div = document.createElement('div');
-    const isMe = currentUser && currentUser.handle === msg.userHandle;
-    div.className = 'msg' + (isMe ? ' me' : '');
-    const time = msg.time ? new Date(msg.time).toLocaleTimeString() : '';
-    div.innerHTML = `<strong>${msg.userName} ${msg.userHandle}</strong><br>${msg.text}<br><small style="color:#9aa6bd">${time}</small>`;
-    messagesEl.appendChild(div);
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-  }
-
-  async function loadMessages() {
-    try {
-      const snapshot = await db.ref('messages').once('value');
-      messagesEl.innerHTML = '';
-      snapshot.forEach(child => renderMessage(child.val()));
-    } catch (err) {
-      console.error(err);
     }
   }
-
-  sendBtn.addEventListener('click', () => {
-    const text = msgInput.value.trim();
-    if (!text || !currentUser) return;
-    db.ref('messages').push({
-      userName: currentUser.name,
-      userHandle: currentUser.handle,
-      text,
-      time: new Date().toISOString()
-    });
-    msgInput.value = '';
-  });
-
-  msgInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendBtn.click(); });
-  db.ref('messages').on('child_added', snapshot => renderMessage(snapshot.val()));
-
-  // Firebase auth persistence
-  firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      const snap = db.ref('users/' + user.uid);
-      snap.once('value').then(profileSnap => {
-        const profile = profileSnap.exists() ? profileSnap.val() : { name: user.email.split('@')[0], handle: user.email };
-        currentUser = { uid: user.uid, name: profile.name, handle: profile.handle };
-        localStorage.setItem('chat_user', JSON.stringify(currentUser));
-        updateUI();
-      });
-    } else {
-      localStorage.removeItem('chat_user');
-      currentUser = null;
-      updateUI();
-    }
-  });
 
   updateUI();
+
 });
 </script>
 
