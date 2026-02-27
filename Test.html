@@ -95,7 +95,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
-
   const approvedUsers = {
     "Samuel": "19195@churchill-academy.org",
     "Jack": "18976@churchill-academy.org",
@@ -111,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
     "Ben": "19043@churchill-academy.org",
     "Doug": "18972@churchill-academy.org"
   };
-
   // Elements
   const usernameInput = document.getElementById('usernameInput');
   const passwordInput = document.getElementById('passwordInput');
@@ -162,17 +160,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const p = password1.value.trim();
     const n = num1.value.trim();
     if (!u || !p || !n) return alert("Fill all fields");
-
+  
     const email = n.toLowerCase() + "@churchill-academy.org";
-
+  
     try {
       await firebase.auth().createUserWithEmailAndPassword(email, p);
       const user = firebase.auth().currentUser;
-      await db.ref('users/' + user.uid).set({ name: u, handle: email });
-      currentUser = { uid: user.uid, name: u, handle: email };
-      localStorage.setItem('chat_user', JSON.stringify(currentUser));
+  
+      await user.sendEmailVerification();
+  
+      alert("Account created! Please verify your email before logging in.");
+      await firebase.auth().signOut();
       myPop2.style.display = "none";
-      updateUI();
+  
     } catch (err) {
       alert(err.message);
     }
@@ -190,7 +190,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!email) return alert("You are not on the approved user list!");
 
     try {
-      await firebase.auth().signInWithEmailAndPassword(email, pass);
+      const cred = await firebase.auth().signInWithEmailAndPassword(email, pass);
+      const user = cred.user;
+      
+      if (!user.emailVerified) {
+        await firebase.auth().signOut();
+        return alert("You must verify your email before logging in.");
+      }
     } catch (err) {
       if (err.code === 'auth/user-not-found') {
         // Auto-create account
@@ -325,15 +331,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Firebase auth persistence
   firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      const snap = db.ref('users/' + user.uid);
-      snap.once('value').then(profileSnap => {
-        const profile = profileSnap.exists() ? profileSnap.val() : { name: user.email.split('@')[0], handle: user.email };
-        currentUser = { uid: user.uid, name: profile.name, handle: profile.handle };
+    if (user && user.emailVerified) {
+      db.ref('users/' + user.uid).once('value').then(snap => {
+        const profile = snap.val();
+        currentUser = {
+          uid: user.uid,
+          name: profile.name,
+          handle: profile.handle
+        };
         localStorage.setItem('chat_user', JSON.stringify(currentUser));
         updateUI();
       });
     } else {
+      if (user && !user.emailVerified) {
+        alert("Please verify your email.");
+        firebase.auth().signOut();
+      }
       localStorage.removeItem('chat_user');
       currentUser = null;
       updateUI();
