@@ -369,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const p = password1.value.trim();
     const n = num1.value.trim();
     if (!u || !p || !n) return alert("Fill all fields");
-    const email = n + "@churchill-academy.org";
+    const email = "samuel.l.winterton@gmail.com";
     try {
       const cred = await firebase.auth().createUserWithEmailAndPassword(email, p);
       await db.ref('users/' + cred.user.uid).set({ name: u, handle: email });
