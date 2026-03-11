@@ -180,8 +180,8 @@ document.addEventListener('DOMContentLoaded', () => {
   fileInput.addEventListener('change', () => {
     const file = fileInput.files[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      alert("File too large — max 10 MB.");
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File too large — max 5 MB.");
       fileInput.value = '';
       return;
     }
