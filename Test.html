@@ -57,6 +57,17 @@ body {font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justi
     </div>
   </aside>
 
+  <!-- Delete Account Modal -->
+  <div id="myPop3" class="pop">
+    <div class="pop-content">
+      <span class="close" id="closePop3">×</span>
+      <h2>Delete Account</h2><br>
+      <p style="color:#555;font-size:0.9em;">This permanently deletes your account. This cannot be undone.</p><br>
+      <input type="password" id="deletePass" placeholder="Confirm your password" style="width:90%;height:34px;"><br><br>
+      <button class="btn" id="confirmDeleteBtn" style="background:linear-gradient(90deg,#f87171,#ef4444);color:#fff;">Yes, delete my account</button>
+    </div>
+  </div>
+
   <!-- Change Password Modal -->
   <div id="myPop" class="pop">
     <div class="pop-content">
@@ -245,6 +256,46 @@ document.addEventListener('DOMContentLoaded', () => {
   // Logout
   logoutBtn.addEventListener('click', () => firebase.auth().signOut());
 
+  // Delete Account — open modal
+  const myPop3        = document.getElementById('myPop3');
+  const closePop3     = document.getElementById('closePop3');
+  const deletePass    = document.getElementById('deletePass');
+  const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+  closePop3.addEventListener('click', () => { myPop3.style.display = 'none'; });
+
+  confirmDeleteBtn.addEventListener('click', async () => {
+    const pass = deletePass.value.trim();
+    if (!pass) return alert("Please enter your password to confirm.");
+
+    try {
+      const user = firebase.auth().currentUser;
+      if (!user) return alert("Not logged in.");
+
+      // Re-authenticate first (required by Firebase before deleting)
+      const cred = firebase.auth.EmailAuthProvider.credential(currentUser.handle, pass);
+      await user.reauthenticateWithCredential(cred);
+
+      const uid = currentUser.uid;
+
+      // 1. Remove from database
+      await db.ref('users/' + uid).remove();
+
+      // 2. Delete auth account
+      await user.delete();
+
+      myPop3.style.display = 'none';
+      alert("Your account has been deleted.");
+      // onAuthStateChanged will fire and clean up UI
+    } catch (err) {
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        alert("Incorrect password.");
+      } else {
+        alert("Error: " + err.message);
+      }
+    }
+  });
+
   // Change Password
   changePassBtn2.addEventListener('click', async () => {
     const curr = currPass.value.trim();
@@ -278,8 +329,16 @@ document.addEventListener('DOMContentLoaded', () => {
       uploadBtn.disabled          = false;
       const right = document.getElementById('rightInfo');
       right.style.display = 'block';
-      right.innerHTML = `<button class="btn" id="changePassBtn">Change Password</button>`;
+      right.innerHTML = `
+        <div style="display:flex;gap:8px;justify-content:flex-start;">
+          <button class="btn" id="changePassBtn">Change Password</button>
+          <button class="btn" id="deleteAccBtnHeader" style="background:linear-gradient(90deg,#f87171,#ef4444);color:#fff;">Delete Account</button>
+        </div>`;
       document.getElementById('changePassBtn').onclick = openChangePassword;
+      document.getElementById('deleteAccBtnHeader').onclick = () => {
+        deletePass.value = '';
+        myPop3.style.display = 'block';
+      };
     } else {
       schoolIdInput.style.display = 'block';
       passwordInput.style.display = 'block';
