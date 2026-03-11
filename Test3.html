@@ -513,7 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!text) return alert("Enter a message.");
     try {
       await db.ref('messages').push({
-        userName: '⚙ Server', userHandle: '',
+        userName: '⚙ Server Message', userHandle: '',
         text: `📢 ${text}`, type: 'server',
         time: new Date().toISOString()
       });
