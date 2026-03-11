@@ -370,7 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       // Post a ban notice in chat
       await db.ref('messages').push({
-        userName:   '⚙ Server',
+        userName:   '⚙ Server Message',
         userHandle: '',
         text:       `🚫 ${banTargetData.name} has been banned.${reason ? ' Reason: ' + reason : ''}`,
         type:       'banned-notice',
