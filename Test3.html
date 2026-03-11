@@ -638,8 +638,18 @@ document.addEventListener('DOMContentLoaded', () => {
       delBtn.textContent = 'Delete';
       delBtn.onclick = async () => {
         if (!confirm('Delete this message?')) return;
-        if (msg.storagePath) {
-          try { await storage.ref(msg.storagePath).delete(); } catch (e) { /* already gone */ }
+        if (msg.fileURL) {
+          try {
+            let ref;
+            if (msg.storagePath) {
+              ref = storage.ref(msg.storagePath);
+            } else {
+              // Fallback: extract path from Firebase Storage download URL
+              const match = msg.fileURL.match(/\/o\/(.+?)\?/);
+              if (match) ref = storage.ref(decodeURIComponent(match[1]));
+            }
+            if (ref) await ref.delete();
+          } catch (e) { /* file already gone, ignore */ }
         }
         await db.ref('messages/' + key).remove();
         div.remove();
