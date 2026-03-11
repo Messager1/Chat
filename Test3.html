@@ -54,8 +54,20 @@ body {font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justi
     <div id="userView" style="display:none;margin-top:20px;">
       <div id="currentUser"></div>
       <button id="logoutBtn" class="btn" style="margin-top:10px;">Log out</button>
+      <button id="deleteAccBtn" class="btn" style="margin-top:8px;background:linear-gradient(90deg,#f87171,#ef4444);color:#fff;">Delete Account</button>
     </div>
   </aside>
+
+  <!-- Delete Account Modal -->
+  <div id="myPop3" class="pop">
+    <div class="pop-content">
+      <span class="close" id="closePop3">×</span>
+      <h2>Delete Account</h2><br>
+      <p style="color:#555;font-size:0.9em;">This permanently deletes your account. This cannot be undone.</p><br>
+      <input type="password" id="deletePass" placeholder="Confirm your password" style="width:90%;height:34px;"><br><br>
+      <button class="btn" id="confirmDeleteBtn" style="background:linear-gradient(90deg,#f87171,#ef4444);color:#fff;">Yes, delete my account</button>
+    </div>
+  </div>
 
   <!-- Change Password Modal -->
   <div id="myPop" class="pop">
@@ -180,8 +192,8 @@ document.addEventListener('DOMContentLoaded', () => {
   fileInput.addEventListener('change', () => {
     const file = fileInput.files[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      alert("File too large — max 10 MB.");
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File too large — max 5 MB.");
       fileInput.value = '';
       return;
     }
@@ -244,6 +256,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Logout
   logoutBtn.addEventListener('click', () => firebase.auth().signOut());
+
+  // Delete Account — open modal
+  const myPop3        = document.getElementById('myPop3');
+  const closePop3     = document.getElementById('closePop3');
+  const deletePass    = document.getElementById('deletePass');
+  const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+  document.getElementById('deleteAccBtn').addEventListener('click', () => {
+    deletePass.value = '';
+    myPop3.style.display = 'block';
+  });
+  closePop3.addEventListener('click', () => { myPop3.style.display = 'none'; });
+
+  confirmDeleteBtn.addEventListener('click', async () => {
+    const pass = deletePass.value.trim();
+    if (!pass) return alert("Please enter your password to confirm.");
+
+    try {
+      const user = firebase.auth().currentUser;
+      if (!user) return alert("Not logged in.");
+
+      // Re-authenticate first (required by Firebase before deleting)
+      const cred = firebase.auth.EmailAuthProvider.credential(currentUser.handle, pass);
+      await user.reauthenticateWithCredential(cred);
+
+      const uid = currentUser.uid;
+
+      // 1. Remove from database
+      await db.ref('users/' + uid).remove();
+
+      // 2. Delete auth account
+      await user.delete();
+
+      myPop3.style.display = 'none';
+      alert("Your account has been deleted.");
+      // onAuthStateChanged will fire and clean up UI
+    } catch (err) {
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        alert("Incorrect password.");
+      } else {
+        alert("Error: " + err.message);
+      }
+    }
+  });
 
   // Change Password
   changePassBtn2.addEventListener('click', async () => {
