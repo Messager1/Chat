@@ -14,14 +14,14 @@ body{font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justif
 .msg{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.05);word-break:break-word;position:relative;}
 .msg.me{background:rgba(45,212,191,0.1);}
 .msg.server{background:linear-gradient(90deg,rgba(251,191,36,0.15),rgba(251,191,36,0.05));border-left:3px solid #fbbf24;font-style:italic;}
-.msg.banned-notice{background:rgba(248,113,113,0.1);border-left:3px solid #f87171;font-style:italic;}
+.msg.kicked-notice{background:rgba(248,113,113,0.1);border-left:3px solid #f87171;font-style:italic;}
 .msg.muted-notice{background:rgba(148,163,184,0.1);border-left:3px solid #94a3b8;font-style:italic;}
 .msg:hover .del-btn{display:inline-block;}
 .del-btn{display:none;position:absolute;top:6px;right:8px;background:rgba(248,113,113,0.2);border:none;color:#f87171;border-radius:4px;cursor:pointer;font-size:11px;padding:2px 6px;}
 .del-btn:hover{background:rgba(248,113,113,0.4);}
-.ban-btn{display:none;position:absolute;top:6px;right:58px;background:rgba(251,191,36,0.2);border:none;color:#fbbf24;border-radius:4px;cursor:pointer;font-size:11px;padding:2px 6px;}
-.ban-btn:hover{background:rgba(251,191,36,0.4);}
-.msg:hover .ban-btn{display:inline-block;}
+.kick-btn{display:none;position:absolute;top:6px;right:58px;background:rgba(251,191,36,0.2);border:none;color:#fbbf24;border-radius:4px;cursor:pointer;font-size:11px;padding:2px 6px;}
+.kick-btn:hover{background:rgba(251,191,36,0.4);}
+.msg:hover .kick-btn{display:inline-block;}
 .compose{padding:10px;border-top:1px solid #1b2435;display:flex;gap:8px;flex-shrink:0;background:#0b1220;align-items:center;}
 .compose input[type=text]{flex:1;padding:8px;border-radius:8px;border:none;background:#1b2435;color:#e6eef6;}
 .btn{padding:8px 12px;border:none;border-radius:8px;background:linear-gradient(90deg,#2dd4bf,#60a5fa);color:#05202a;cursor:pointer;font-weight:bold;}
@@ -86,7 +86,7 @@ body{font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justif
         <div class="admin-btn-row" style="margin-bottom:6px;">
           <button id="serverMsgBtn" class="btn btn-yellow">📢 Announce</button>
           <button id="muteUserBtn"  class="btn btn-grey">🔇 Mute</button>
-          <button id="banUserBtn"   class="btn btn-red">🚫 Ban</button>
+          <button id="kickUserBtn"   class="btn btn-red">🚫 kick</button>
         </div>
       </div>
     </div>
@@ -126,26 +126,26 @@ body{font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justif
     </div>
   </div>
 
-  <!-- Ban User Modal (from message hover) -->
-  <div id="banPop" class="pop">
+  <!-- kick User Modal (from message hover) -->
+  <div id="kickPop" class="pop">
     <div class="pop-content">
-      <span class="close" id="closeBanPop">×</span>
-      <h2>🚫 Ban User</h2><br>
-      <p id="banTarget" style="color:#555;font-size:0.9em;"></p>
-      <input type="text" id="banReason" placeholder="Reason (optional)" style="width:90%;height:34px;margin-top:10px;"><br><br>
-      <button class="btn btn-red" id="confirmBanBtn">Ban User</button>
+      <span class="close" id="closekickPop">×</span>
+      <h2>🚫 kick User</h2><br>
+      <p id="kickTarget" style="color:#555;font-size:0.9em;"></p>
+      <input type="text" id="kickReason" placeholder="Reason (optional)" style="width:90%;height:34px;margin-top:10px;"><br><br>
+      <button class="btn btn-red" id="confirmkickBtn">kick User</button>
     </div>
   </div>
 
-  <!-- Ban User Picker Modal (from admin panel) -->
-  <div id="banPickerPop" class="pop">
+  <!-- kick User Picker Modal (from admin panel) -->
+  <div id="kickPickerPop" class="pop">
     <div class="pop-content">
-      <span class="close" id="closeBanPickerPop">×</span>
-      <h2>🚫 Ban User</h2>
-      <p style="color:#555;font-size:0.85em;">Select a user to ban:</p>
-      <div class="user-list" id="banUserList"></div>
-      <input type="text" id="banPickerReason" placeholder="Reason (optional)" style="width:90%;height:34px;margin-top:8px;border-radius:6px;border:1px solid #ccc;padding:0 8px;"><br><br>
-      <button class="btn btn-red" id="confirmBanPickerBtn">Ban Selected User</button>
+      <span class="close" id="closekickPickerPop">×</span>
+      <h2>🚫 kick User</h2>
+      <p style="color:#555;font-size:0.85em;">Select a user to kick:</p>
+      <div class="user-list" id="kickUserList"></div>
+      <input type="text" id="kickPickerReason" placeholder="Reason (optional)" style="width:90%;height:34px;margin-top:8px;border-radius:6px;border:1px solid #ccc;padding:0 8px;"><br><br>
+      <button class="btn btn-red" id="confirmkickPickerBtn">kick Selected User</button>
     </div>
   </div>
 
@@ -258,18 +258,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const deletePass          = document.getElementById('deletePass');
   const confirmDeleteBtn    = document.getElementById('confirmDeleteBtn');
 
-  const banPop              = document.getElementById('banPop');
-  const closeBanPop         = document.getElementById('closeBanPop');
-  const banTarget           = document.getElementById('banTarget');
-  const banReason           = document.getElementById('banReason');
-  const confirmBanBtn       = document.getElementById('confirmBanBtn');
+  const kickPop              = document.getElementById('kickPop');
+  const closekickPop         = document.getElementById('closekickPop');
+  const kickTarget           = document.getElementById('kickTarget');
+  const kickReason           = document.getElementById('kickReason');
+  const confirmkickBtn       = document.getElementById('confirmkickBtn');
 
-  const banPickerPop        = document.getElementById('banPickerPop');
-  const closeBanPickerPop   = document.getElementById('closeBanPickerPop');
-  const banUserList         = document.getElementById('banUserList');
-  const banPickerReason     = document.getElementById('banPickerReason');
-  const confirmBanPickerBtn = document.getElementById('confirmBanPickerBtn');
-  const banUserBtn          = document.getElementById('banUserBtn');
+  const kickPickerPop        = document.getElementById('kickPickerPop');
+  const closekickPickerPop   = document.getElementById('closekickPickerPop');
+  const kickUserList         = document.getElementById('kickUserList');
+  const kickPickerReason     = document.getElementById('kickPickerReason');
+  const confirmkickPickerBtn = document.getElementById('confirmkickPickerBtn');
+  const kickUserBtn          = document.getElementById('kickUserBtn');
 
   const mutePickerPop       = document.getElementById('mutePickerPop');
   const closeMutePickerPop  = document.getElementById('closeMutePickerPop');
@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let selectedFile    = null;
   let activeUpload    = null;
   let uploadCancelled = false;
-  let banTargetData   = null;
+  let kickTargetData   = null;
   let pickerSelected  = null;
   const renderedKeys  = new Set();
 
@@ -296,8 +296,8 @@ document.addEventListener('DOMContentLoaded', () => {
   closePop2.addEventListener('click',            () => { myPop2.style.display         = "none"; });
   closePop.addEventListener('click',             () => { myPop.style.display          = "none"; });
   closePop3.addEventListener('click',            () => { myPop3.style.display         = "none"; });
-  closeBanPop.addEventListener('click',          () => { banPop.style.display         = "none"; });
-  closeBanPickerPop.addEventListener('click',    () => { banPickerPop.style.display   = "none"; });
+  closekickPop.addEventListener('click',          () => { kickPop.style.display         = "none"; });
+  closekickPickerPop.addEventListener('click',    () => { kickPickerPop.style.display   = "none"; });
   closeMutePickerPop.addEventListener('click',   () => { mutePickerPop.style.display  = "none"; });
   closeServerMsgPop.addEventListener('click',    () => { serverMsgPop.style.display   = "none"; });
   lightbox.addEventListener('click',             () => { lightbox.classList.remove('open'); });
@@ -376,10 +376,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const email = n + "@churchill-academy.org";
     try {
       const cred = await firebase.auth().createUserWithEmailAndPassword(email, p);
-      await db.ref('users/' + cred.user.uid).set({ name: u, handle: email });
+      // Save username in displayName — DB profile only written after email is verified
+      await cred.user.updateProfile({ displayName: u });
       await cred.user.sendEmailVerification();
-      alert("Account created! Check your school email to verify before logging in.");
+      // Delete the auth account if they never verify — clean up unverified orphans
+      // We sign out immediately; they must verify before the DB profile is created
       await firebase.auth().signOut();
+      alert("Account created! Check your school email to verify before logging in.");
       myPop2.style.display = "none";
       username1.value = ''; password1.value = ''; num1.value = '';
     } catch (err) { alert(err.message); }
@@ -443,42 +446,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ── Admin: Ban from message hover ────────────────────
-  confirmBanBtn.addEventListener('click', async () => {
-    if (!banTargetData) return;
-    const reason = banReason.value.trim();
+  // ── Admin: kick from message hover ────────────────────
+  confirmkickBtn.addEventListener('click', async () => {
+    if (!kickTargetData) return;
+    const reason = kickReason.value.trim();
     try {
-      if (banTargetData.uid) await db.ref('users/' + banTargetData.uid).remove();
+      if (kickTargetData.uid) {
+        await db.ref('users/' + kickTargetData.uid).remove();
+      }
       await db.ref('messages').push({
         userName: '⚙ Server', userHandle: '',
-        text: `🚫 ${banTargetData.name} has been banned.${reason ? ' Reason: ' + reason : ''}`,
-        type: 'banned-notice', time: new Date().toISOString()
+        text: `🚫 ${kickTargetData.name} has been kicked.${reason ? ' Reason: ' + reason : ''}`,
+        type: 'kicked-notice', time: new Date().toISOString()
       });
-      banPop.style.display = 'none';
-      banReason.value = '';
-      banTargetData = null;
+      kickPop.style.display = 'none';
+      kickReason.value = '';
+      kickTargetData = null;
     } catch (err) { alert("Error: " + err.message); }
   });
 
-  // ── Admin: Ban from picker ───────────────────────────
-  banUserBtn.addEventListener('click', async () => {
-    banPickerReason.value = '';
+  // ── Admin: kick from picker ───────────────────────────
+  kickUserBtn.addEventListener('click', async () => {
+    kickPickerReason.value = '';
     pickerSelected = null;
-    await loadUserPicker(banUserList);
-    banPickerPop.style.display = 'block';
+    await loadUserPicker(kickUserList);
+    kickPickerPop.style.display = 'block';
   });
 
-  confirmBanPickerBtn.addEventListener('click', async () => {
+  confirmkickPickerBtn.addEventListener('click', async () => {
     if (!pickerSelected) return alert("Select a user first.");
-    const reason = banPickerReason.value.trim();
+    const reason = kickPickerReason.value.trim();
     try {
       await db.ref('users/' + pickerSelected.uid).remove();
       await db.ref('messages').push({
         userName: '⚙ Server', userHandle: '',
-        text: `🚫 ${pickerSelected.name} has been banned.${reason ? ' Reason: ' + reason : ''}`,
-        type: 'banned-notice', time: new Date().toISOString()
+        text: `🚫 ${pickerSelected.name} has been kicked.${reason ? ' Reason: ' + reason : ''}`,
+        type: 'kicked-notice', time: new Date().toISOString()
       });
-      banPickerPop.style.display = 'none';
+      kickPickerPop.style.display = 'none';
       pickerSelected = null;
     } catch (err) { alert("Error: " + err.message); }
   });
@@ -595,7 +600,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let cls = 'msg';
     if      (msg.type === 'server')        cls += ' server';
-    else if (msg.type === 'banned-notice') cls += ' banned-notice';
+    else if (msg.type === 'kicked-notice') cls += ' kicked-notice';
     else if (msg.type === 'muted-notice')  cls += ' muted-notice';
     else if (isMe)                         cls += ' me';
     div.className = cls;
@@ -612,24 +617,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const adminBadge = msg.isAdmin ? ' <span class="admin-tag">ADMIN</span>' : '';
-    const headerLine = (msg.type === 'server' || msg.type === 'banned-notice' || msg.type === 'muted-notice')
+    const headerLine = (msg.type === 'server' || msg.type === 'kicked-notice' || msg.type === 'muted-notice')
       ? `<strong>${msg.userName}</strong>`
       : `<strong>${msg.userName}</strong>${adminBadge} <span style="color:#9aa6bd;font-size:0.8em">${msg.userHandle}</span>`;
 
     div.innerHTML = `${headerLine}<br>${body}<br><small style="color:#9aa6bd">${time}</small>`;
 
     // Admin controls
-    if (currentUser && currentUser.admin && msg.type !== 'server' && msg.type !== 'banned-notice' && msg.type !== 'muted-notice') {
-      const banBtn = document.createElement('button');
-      banBtn.className   = 'ban-btn';
-      banBtn.textContent = 'Ban';
-      banBtn.onclick = () => {
-        banTargetData = { uid: msg.userUid || null, name: msg.userName, handle: msg.userHandle };
-        banTarget.textContent = `Ban ${msg.userName} (${msg.userHandle})?`;
-        banReason.value = '';
-        banPop.style.display = 'block';
+    if (currentUser && currentUser.admin && msg.type !== 'server' && msg.type !== 'kicked-notice' && msg.type !== 'muted-notice') {
+      const kickBtn = document.createElement('button');
+      kickBtn.className   = 'kick-btn';
+      kickBtn.textContent = 'kick';
+      kickBtn.onclick = () => {
+        kickTargetData = { uid: msg.userUid || null, name: msg.userName, handle: msg.userHandle };
+        kickTarget.textContent = `kick ${msg.userName} (${msg.userHandle})?`;
+        kickReason.value = '';
+        kickPop.style.display = 'block';
       };
-      div.appendChild(banBtn);
+      div.appendChild(kickBtn);
     }
 
     if (currentUser && currentUser.admin) {
@@ -750,13 +755,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (user && user.emailVerified) {
       try {
         const snap    = await db.ref('users/' + user.uid).once('value');
-        const profile = snap.val();
+        let profile = snap.val();
+
+        if (!profile) {
+          // No DB profile — either first login or was kicked and is rejoining
+          // Just recreate their profile from displayName (kick = temp kick, not permanent)
+          const name = user.displayName || user.email;
+          profile = { name, handle: user.email };
+          await db.ref('users/' + user.uid).set(profile);
+        }
+
         currentUser = {
           uid:    user.uid,
-          name:   profile ? profile.name   : user.email,
-          handle: profile ? profile.handle : user.email,
-          admin:  profile ? !!profile.admin : false,
-          muted:  profile ? !!profile.muted  : false
+          name:   profile.name,
+          handle: profile.handle,
+          admin:  !!profile.admin,
+          muted:  !!profile.muted
         };
       } catch {
         currentUser = { uid: user.uid, name: user.email, handle: user.email, admin: false, muted: false };
