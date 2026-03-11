@@ -15,10 +15,11 @@ body{font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justif
 .msg.me{background:rgba(45,212,191,0.1);}
 .msg.server{background:linear-gradient(90deg,rgba(251,191,36,0.15),rgba(251,191,36,0.05));border-left:3px solid #fbbf24;font-style:italic;}
 .msg.banned-notice{background:rgba(248,113,113,0.1);border-left:3px solid #f87171;font-style:italic;}
+.msg.muted-notice{background:rgba(148,163,184,0.1);border-left:3px solid #94a3b8;font-style:italic;}
 .msg:hover .del-btn{display:inline-block;}
 .del-btn{display:none;position:absolute;top:6px;right:8px;background:rgba(248,113,113,0.2);border:none;color:#f87171;border-radius:4px;cursor:pointer;font-size:11px;padding:2px 6px;}
 .del-btn:hover{background:rgba(248,113,113,0.4);}
-.ban-btn{display:none;position:absolute;top:6px;right:60px;background:rgba(251,191,36,0.2);border:none;color:#fbbf24;border-radius:4px;cursor:pointer;font-size:11px;padding:2px 6px;}
+.ban-btn{display:none;position:absolute;top:6px;right:58px;background:rgba(251,191,36,0.2);border:none;color:#fbbf24;border-radius:4px;cursor:pointer;font-size:11px;padding:2px 6px;}
 .ban-btn:hover{background:rgba(251,191,36,0.4);}
 .msg:hover .ban-btn{display:inline-block;}
 .compose{padding:10px;border-top:1px solid #1b2435;display:flex;gap:8px;flex-shrink:0;background:#0b1220;align-items:center;}
@@ -28,6 +29,7 @@ body{font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justif
 .btn:disabled{opacity:0.4;cursor:not-allowed;}
 .btn-red{background:linear-gradient(90deg,#f87171,#ef4444)!important;color:#fff!important;}
 .btn-yellow{background:linear-gradient(90deg,#fbbf24,#f59e0b)!important;color:#05202a!important;}
+.btn-grey{background:linear-gradient(90deg,#64748b,#475569)!important;color:#fff!important;}
 .upload-btn{padding:7px 10px;border:none;border-radius:8px;background:#1b2435;color:#9aa6bd;cursor:pointer;font-size:18px;line-height:1;}
 .upload-btn:hover{background:#243050;color:#e6eef6;}
 .upload-btn:disabled{opacity:0.4;cursor:not-allowed;}
@@ -39,17 +41,26 @@ body{font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justif
 .msg-image{max-width:260px;max-height:200px;border-radius:6px;display:block;margin-top:6px;cursor:pointer;}
 .msg-file{display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:6px 10px;background:rgba(255,255,255,0.07);border-radius:6px;text-decoration:none;color:#60a5fa;font-size:0.9em;}
 .msg-file:hover{background:rgba(255,255,255,0.12);}
-.pop{display:none;position:fixed;z-index:1000;padding-top:120px;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgba(0,0,0,0.4);}
-.pop-content{position:relative;background:#f5f5f5;margin:auto;border:2px solid #888;padding:20px;border-radius:20px;width:400px;color:#28282e;box-shadow:0 4px 8px rgba(0,0,0,0.2);text-align:center;}
+.pop{display:none;position:fixed;z-index:1000;padding-top:80px;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgba(0,0,0,0.5);}
+.pop-content{position:relative;background:#f5f5f5;margin:auto;border:2px solid #888;padding:20px;border-radius:20px;width:420px;color:#28282e;box-shadow:0 4px 8px rgba(0,0,0,0.2);text-align:center;}
 .close{position:absolute;color:#000;top:12px;right:12px;font-size:24px;font-weight:bold;cursor:pointer;}
 .close:hover{color:#d1cfcf;}
 #lightbox{display:none;position:fixed;z-index:2000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.85);justify-content:center;align-items:center;}
 #lightbox img{max-width:90%;max-height:90%;border-radius:8px;}
 #lightbox.open{display:flex;}
-/* Admin panel in sidebar */
+/* Admin panel */
 #adminPanel{display:none;margin-top:16px;padding-top:16px;border-top:1px solid #1b2435;}
 #adminPanel h4{color:#fbbf24;margin:0 0 8px 0;font-size:0.85em;text-transform:uppercase;letter-spacing:1px;}
+.admin-btn-row{display:flex;flex-direction: column;gap:6px;}
+.admin-btn-row .btn{flex:1;font-size:0.8em;padding:7px 6px;}
 .admin-tag{font-size:0.7em;background:#fbbf24;color:#05202a;border-radius:4px;padding:1px 5px;font-weight:bold;vertical-align:middle;margin-left:4px;}
+/* User picker inside modals */
+.user-list{max-height:200px;overflow-y:auto;margin:10px 0;border:1px solid #ccc;border-radius:8px;text-align:left;}
+.user-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid #e5e5e5;display:flex;align-items:center;justify-content:space-between;}
+.user-item:last-child{border-bottom:none;}
+.user-item:hover{background:#e8f4ff;}
+.user-item.selected{background:#dbeafe;}
+.user-item .muted-badge{font-size:0.72em;background:#94a3b8;color:#fff;border-radius:4px;padding:1px 5px;}
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -70,10 +81,13 @@ body{font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justif
       <div id="currentUser"></div>
       <button id="logoutBtn" class="btn" style="margin-top:10px;">Log out</button>
 
-      <!-- Admin panel -->
       <div id="adminPanel">
         <h4>⚙ Admin</h4>
-        <button id="serverMsgBtn" class="btn btn-yellow" style="width:100%;margin-bottom:6px;">📢 Server Message</button>
+        <div class="admin-btn-row" style="margin-bottom:6px;">
+          <button id="serverMsgBtn" class="btn btn-yellow">📢 Announce</button>
+          <button id="muteUserBtn"  class="btn btn-grey">🔇 Mute</button>
+          <button id="banUserBtn"   class="btn btn-red">🚫 Ban</button>
+        </div>
       </div>
     </div>
   </aside>
@@ -112,18 +126,41 @@ body{font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justif
     </div>
   </div>
 
-  <!-- Ban User Modal (admin) -->
+  <!-- Ban User Modal (from message hover) -->
   <div id="banPop" class="pop">
     <div class="pop-content">
       <span class="close" id="closeBanPop">×</span>
-      <h2>Ban User</h2><br>
-      <p id="banTarget" style="color:#555;font-size:0.9em;"></p><br>
-      <input type="text" id="banReason" placeholder="Reason for ban (optional)" style="width:90%;height:34px;"><br><br>
+      <h2>🚫 Ban User</h2><br>
+      <p id="banTarget" style="color:#555;font-size:0.9em;"></p>
+      <input type="text" id="banReason" placeholder="Reason (optional)" style="width:90%;height:34px;margin-top:10px;"><br><br>
       <button class="btn btn-red" id="confirmBanBtn">Ban User</button>
     </div>
   </div>
 
-  <!-- Server Message Modal (admin) -->
+  <!-- Ban User Picker Modal (from admin panel) -->
+  <div id="banPickerPop" class="pop">
+    <div class="pop-content">
+      <span class="close" id="closeBanPickerPop">×</span>
+      <h2>🚫 Ban User</h2>
+      <p style="color:#555;font-size:0.85em;">Select a user to ban:</p>
+      <div class="user-list" id="banUserList"></div>
+      <input type="text" id="banPickerReason" placeholder="Reason (optional)" style="width:90%;height:34px;margin-top:8px;border-radius:6px;border:1px solid #ccc;padding:0 8px;"><br><br>
+      <button class="btn btn-red" id="confirmBanPickerBtn">Ban Selected User</button>
+    </div>
+  </div>
+
+  <!-- Mute User Picker Modal -->
+  <div id="mutePickerPop" class="pop">
+    <div class="pop-content">
+      <span class="close" id="closeMutePickerPop">×</span>
+      <h2>🔇 Mute / Unmute User</h2>
+      <p style="color:#555;font-size:0.85em;">Select a user to mute or unmute:</p>
+      <div class="user-list" id="muteUserList"></div><br>
+      <button class="btn btn-grey" id="confirmMuteBtn">Mute / Unmute Selected</button>
+    </div>
+  </div>
+
+  <!-- Server Message Modal -->
   <div id="serverMsgPop" class="pop">
     <div class="pop-content">
       <span class="close" id="closeServerMsgPop">×</span>
@@ -178,53 +215,66 @@ document.addEventListener('DOMContentLoaded', () => {
   const db      = firebase.database();
   const storage = firebase.storage();
 
-  // Elements
-  const schoolIdInput    = document.getElementById('schoolIdInput');
-  const passwordInput    = document.getElementById('passwordInput');
-  const loginBtn         = document.getElementById('loginBtn');
-  const signupBtn        = document.getElementById('signupBtn');
-  const logoutBtn        = document.getElementById('logoutBtn');
-  const currentUserEl    = document.getElementById('currentUser');
-  const headerUser       = document.getElementById('headerUser');
-  const Instruct         = document.getElementById('Instruct');
-  const msgInput         = document.getElementById('msgInput');
-  const sendBtn          = document.getElementById('sendBtn');
-  const messagesEl       = document.getElementById('messages');
-  const userView         = document.getElementById('userView');
-  const uploadBtn        = document.getElementById('uploadBtn');
-  const fileInput        = document.getElementById('fileInput');
-  const filePreview      = document.getElementById('filePreview');
-  const fileNameEl       = document.getElementById('fileName');
-  const clearFileBtn     = document.getElementById('clearFile');
-  const uploadProgress   = document.getElementById('uploadProgress');
-  const uploadPct        = document.getElementById('uploadPct');
-  const lightbox         = document.getElementById('lightbox');
-  const lightboxImg      = document.getElementById('lightboxImg');
-  const adminPanel       = document.getElementById('adminPanel');
+  // ── Element refs ─────────────────────────────────────
+  const schoolIdInput       = document.getElementById('schoolIdInput');
+  const passwordInput       = document.getElementById('passwordInput');
+  const loginBtn            = document.getElementById('loginBtn');
+  const signupBtn           = document.getElementById('signupBtn');
+  const logoutBtn           = document.getElementById('logoutBtn');
+  const currentUserEl       = document.getElementById('currentUser');
+  const headerUser          = document.getElementById('headerUser');
+  const Instruct            = document.getElementById('Instruct');
+  const msgInput            = document.getElementById('msgInput');
+  const sendBtn             = document.getElementById('sendBtn');
+  const messagesEl          = document.getElementById('messages');
+  const userView            = document.getElementById('userView');
+  const uploadBtn           = document.getElementById('uploadBtn');
+  const fileInput           = document.getElementById('fileInput');
+  const filePreview         = document.getElementById('filePreview');
+  const fileNameEl          = document.getElementById('fileName');
+  const clearFileBtn        = document.getElementById('clearFile');
+  const uploadProgress      = document.getElementById('uploadProgress');
+  const uploadPct           = document.getElementById('uploadPct');
+  const lightbox            = document.getElementById('lightbox');
+  const lightboxImg         = document.getElementById('lightboxImg');
+  const adminPanel          = document.getElementById('adminPanel');
 
-  const myPop2           = document.getElementById('myPop2');
-  const closePop2        = document.getElementById('closePop2');
-  const username1        = document.getElementById('username1');
-  const password1        = document.getElementById('password1');
-  const num1             = document.getElementById('num1');
-  const signupBtn2       = document.getElementById('signupBtn2');
+  const myPop2              = document.getElementById('myPop2');
+  const closePop2           = document.getElementById('closePop2');
+  const username1           = document.getElementById('username1');
+  const password1           = document.getElementById('password1');
+  const num1                = document.getElementById('num1');
+  const signupBtn2          = document.getElementById('signupBtn2');
 
-  const myPop            = document.getElementById('myPop');
-  const closePop         = document.getElementById('closePop');
-  const currPass         = document.getElementById('currPass');
-  const newPass          = document.getElementById('newPass');
-  const changePassBtn2   = document.getElementById('changePassBtn2');
+  const myPop               = document.getElementById('myPop');
+  const closePop            = document.getElementById('closePop');
+  const currPass            = document.getElementById('currPass');
+  const newPass             = document.getElementById('newPass');
+  const changePassBtn2      = document.getElementById('changePassBtn2');
 
-  const myPop3           = document.getElementById('myPop3');
-  const closePop3        = document.getElementById('closePop3');
-  const deletePass       = document.getElementById('deletePass');
-  const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+  const myPop3              = document.getElementById('myPop3');
+  const closePop3           = document.getElementById('closePop3');
+  const deletePass          = document.getElementById('deletePass');
+  const confirmDeleteBtn    = document.getElementById('confirmDeleteBtn');
 
-  const banPop           = document.getElementById('banPop');
-  const closeBanPop      = document.getElementById('closeBanPop');
-  const banTarget        = document.getElementById('banTarget');
-  const banReason        = document.getElementById('banReason');
-  const confirmBanBtn    = document.getElementById('confirmBanBtn');
+  const banPop              = document.getElementById('banPop');
+  const closeBanPop         = document.getElementById('closeBanPop');
+  const banTarget           = document.getElementById('banTarget');
+  const banReason           = document.getElementById('banReason');
+  const confirmBanBtn       = document.getElementById('confirmBanBtn');
+
+  const banPickerPop        = document.getElementById('banPickerPop');
+  const closeBanPickerPop   = document.getElementById('closeBanPickerPop');
+  const banUserList         = document.getElementById('banUserList');
+  const banPickerReason     = document.getElementById('banPickerReason');
+  const confirmBanPickerBtn = document.getElementById('confirmBanPickerBtn');
+  const banUserBtn          = document.getElementById('banUserBtn');
+
+  const mutePickerPop       = document.getElementById('mutePickerPop');
+  const closeMutePickerPop  = document.getElementById('closeMutePickerPop');
+  const muteUserList        = document.getElementById('muteUserList');
+  const confirmMuteBtn      = document.getElementById('confirmMuteBtn');
+  const muteUserBtn         = document.getElementById('muteUserBtn');
 
   const serverMsgPop        = document.getElementById('serverMsgPop');
   const closeServerMsgPop   = document.getElementById('closeServerMsgPop');
@@ -236,21 +286,54 @@ document.addEventListener('DOMContentLoaded', () => {
   let selectedFile    = null;
   let activeUpload    = null;
   let uploadCancelled = false;
-  let banTargetData   = null; // stores {uid, name, handle} of user being banned
+  let banTargetData   = null;
+  let pickerSelected  = null; // selected user in picker modals
   const renderedKeys  = new Set();
 
-  // ── Modals ──────────────────────────────────────────
-  signupBtn.addEventListener('click',         () => { myPop2.style.display = "block"; });
-  closePop2.addEventListener('click',         () => { myPop2.style.display = "none"; });
-  closePop.addEventListener('click',          () => { myPop.style.display  = "none"; });
-  closePop3.addEventListener('click',         () => { myPop3.style.display = "none"; });
-  closeBanPop.addEventListener('click',       () => { banPop.style.display = "none"; });
-  closeServerMsgPop.addEventListener('click', () => { serverMsgPop.style.display = "none"; });
-  lightbox.addEventListener('click',          () => { lightbox.classList.remove('open'); });
+  // ── Modals close ────────────────────────────────────
+  signupBtn.addEventListener('click',            () => { myPop2.style.display         = "block"; });
+  closePop2.addEventListener('click',            () => { myPop2.style.display         = "none"; });
+  closePop.addEventListener('click',             () => { myPop.style.display          = "none"; });
+  closePop3.addEventListener('click',            () => { myPop3.style.display         = "none"; });
+  closeBanPop.addEventListener('click',          () => { banPop.style.display         = "none"; });
+  closeBanPickerPop.addEventListener('click',    () => { banPickerPop.style.display   = "none"; });
+  closeMutePickerPop.addEventListener('click',   () => { mutePickerPop.style.display  = "none"; });
+  closeServerMsgPop.addEventListener('click',    () => { serverMsgPop.style.display   = "none"; });
+  lightbox.addEventListener('click',             () => { lightbox.classList.remove('open'); });
 
   function openChangePassword() {
     currPass.value = ''; newPass.value = '';
     myPop.style.display = 'block';
+  }
+
+  // ── Helper: load all non-admin users into a picker list ──
+  async function loadUserPicker(containerEl, highlightMuted = false) {
+    containerEl.innerHTML = '<div style="padding:10px;color:#888;">Loading...</div>';
+    pickerSelected = null;
+    const snap = await db.ref('users').once('value');
+    containerEl.innerHTML = '';
+    snap.forEach(child => {
+      const u = child.val();
+      const uid = child.key;
+      if (u.admin) return; // don't show admins
+      const item = document.createElement('div');
+      item.className = 'user-item';
+      item.dataset.uid    = uid;
+      item.dataset.name   = u.name;
+      item.dataset.handle = u.handle;
+      item.dataset.muted  = u.muted ? 'true' : 'false';
+      const mutedBadge = u.muted ? '<span class="muted-badge">MUTED</span>' : '';
+      item.innerHTML = `<span><strong>${u.name}</strong> <span style="font-size:0.8em;color:#666">${u.handle}</span></span>${mutedBadge}`;
+      item.addEventListener('click', () => {
+        containerEl.querySelectorAll('.user-item').forEach(i => i.classList.remove('selected'));
+        item.classList.add('selected');
+        pickerSelected = { uid, name: u.name, handle: u.handle, muted: !!u.muted };
+      });
+      containerEl.appendChild(item);
+    });
+    if (!containerEl.children.length) {
+      containerEl.innerHTML = '<div style="padding:10px;color:#888;">No users found.</div>';
+    }
   }
 
   // ── File picker ──────────────────────────────────────
@@ -272,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
   clearFileBtn.addEventListener('click', () => {
     if (activeUpload) { activeUpload.cancel(); activeUpload = null; }
     uploadCancelled = true;
-    selectedFile = null;
+    selectedFile    = null;
     fileInput.value = '';
     filePreview.style.display    = 'none';
     uploadProgress.style.display = 'none';
@@ -338,8 +421,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ── Delete Account ───────────────────────────────────
-  closePop3.addEventListener('click', () => { myPop3.style.display = 'none'; });
-
   confirmDeleteBtn.addEventListener('click', async () => {
     const pass = deletePass.value.trim();
     if (!pass) return alert("Please enter your password to confirm.");
@@ -348,8 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!user) return alert("Not logged in.");
       const cred = firebase.auth.EmailAuthProvider.credential(currentUser.handle, pass);
       await user.reauthenticateWithCredential(cred);
-      const uid = currentUser.uid;
-      await db.ref('users/' + uid).remove();
+      await db.ref('users/' + currentUser.uid).remove();
       await user.delete();
       myPop3.style.display = 'none';
       alert("Your account has been deleted.");
@@ -359,26 +439,66 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ── Admin: Ban User ──────────────────────────────────
+  // ── Admin: Ban from message hover ────────────────────
   confirmBanBtn.addEventListener('click', async () => {
     if (!banTargetData) return;
     const reason = banReason.value.trim();
     try {
-      // Delete their profile from the database (they can sign up fresh)
-      if (banTargetData.uid) {
-        await db.ref('users/' + banTargetData.uid).remove();
-      }
-      // Post a ban notice in chat
+      if (banTargetData.uid) await db.ref('users/' + banTargetData.uid).remove();
       await db.ref('messages').push({
-        userName:   '⚙ Server',
-        userHandle: '',
-        text:       `🚫 ${banTargetData.name} has been banned.${reason ? ' Reason: ' + reason : ''}`,
-        type:       'banned-notice',
-        time:       new Date().toISOString()
+        userName: '⚙ Server', userHandle: '',
+        text: `🚫 ${banTargetData.name} has been banned.${reason ? ' Reason: ' + reason : ''}`,
+        type: 'banned-notice', time: new Date().toISOString()
       });
       banPop.style.display = 'none';
       banReason.value = '';
       banTargetData = null;
+    } catch (err) { alert("Error: " + err.message); }
+  });
+
+  // ── Admin: Ban from picker ───────────────────────────
+  banUserBtn.addEventListener('click', async () => {
+    banPickerReason.value = '';
+    pickerSelected = null;
+    await loadUserPicker(banUserList);
+    banPickerPop.style.display = 'block';
+  });
+
+  confirmBanPickerBtn.addEventListener('click', async () => {
+    if (!pickerSelected) return alert("Select a user first.");
+    const reason = banPickerReason.value.trim();
+    try {
+      await db.ref('users/' + pickerSelected.uid).remove();
+      await db.ref('messages').push({
+        userName: '⚙ Server', userHandle: '',
+        text: `🚫 ${pickerSelected.name} has been banned.${reason ? ' Reason: ' + reason : ''}`,
+        type: 'banned-notice', time: new Date().toISOString()
+      });
+      banPickerPop.style.display = 'none';
+      pickerSelected = null;
+    } catch (err) { alert("Error: " + err.message); }
+  });
+
+  // ── Admin: Mute from picker ──────────────────────────
+  muteUserBtn.addEventListener('click', async () => {
+    pickerSelected = null;
+    await loadUserPicker(muteUserList, true);
+    mutePickerPop.style.display = 'block';
+  });
+
+  confirmMuteBtn.addEventListener('click', async () => {
+    if (!pickerSelected) return alert("Select a user first.");
+    const nowMuted = !pickerSelected.muted;
+    try {
+      await db.ref('users/' + pickerSelected.uid).update({ muted: nowMuted });
+      const action = nowMuted ? 'muted' : 'unmuted';
+      await db.ref('messages').push({
+        userName: '⚙ Server', userHandle: '',
+        text: `🔇 ${pickerSelected.name} has been ${action}.`,
+        type: 'muted-notice', time: new Date().toISOString()
+      });
+      mutePickerPop.style.display = 'none';
+      pickerSelected = null;
     } catch (err) { alert("Error: " + err.message); }
   });
 
@@ -393,18 +513,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!text) return alert("Enter a message.");
     try {
       await db.ref('messages').push({
-        userName:   '⚙ Server Message',
-        userHandle: '',
-        text:       `📢 ${text}`,
-        type:       'server',
-        time:       new Date().toISOString()
+        userName: '⚙ Server Message', userHandle: '',
+        text: `📢 ${text}`, type: 'server',
+        time: new Date().toISOString()
       });
       serverMsgPop.style.display = 'none';
       serverMsgText.value = '';
     } catch (err) { alert("Error: " + err.message); }
   });
 
-  // ── UI update ────────────────────────────────────────
+  // ── UI update ─────────────────────────────────────────
   function updateUI() {
     if (currentUser) {
       schoolIdInput.style.display = 'none';
@@ -413,20 +531,18 @@ document.addEventListener('DOMContentLoaded', () => {
       loginBtn.style.display      = 'none';
       userView.style.display      = 'block';
       const adminTag = currentUser.admin ? '<span class="admin-tag">ADMIN</span>' : '';
-      currentUserEl.innerHTML     = `${currentUser.name} ${adminTag}<br><span style="font-size:0.8em;color:#9aa6bd">${currentUser.handle}</span>`;
-      headerUser.innerHTML        = `${currentUser.name}${adminTag}`;
-      Instruct.textContent        = `Hello ${currentUser.name}`;
-      msgInput.disabled           = false;
-      msgInput.placeholder        = 'Type a message...';
-      sendBtn.disabled            = false;
-      uploadBtn.disabled          = false;
-
-      // Show admin panel only for admins
+      currentUserEl.innerHTML = `${currentUser.name} ${adminTag}<br><span style="font-size:0.8em;color:#9aa6bd">${currentUser.handle}</span>`;
+      headerUser.innerHTML    = `${currentUser.name}${adminTag}`;
+      Instruct.textContent    = `Hello ${currentUser.name}`;
+      msgInput.disabled       = currentUser.muted;
+      msgInput.placeholder    = currentUser.muted ? '🔇 You are muted' : 'Type a message...';
+      sendBtn.disabled        = currentUser.muted;
+      uploadBtn.disabled      = currentUser.muted;
       adminPanel.style.display = currentUser.admin ? 'block' : 'none';
 
       const right = document.getElementById('rightInfo');
-      right.style.display = 'flex';
-      right.style.gap     = '8px';
+      right.style.display    = 'flex';
+      right.style.gap        = '8px';
       right.style.alignItems = 'center';
       right.innerHTML = `
         <button class="btn" id="changePassBtn">Change Password</button>
@@ -453,7 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ── Render messages ──────────────────────────────────
+  // ── Render messages ───────────────────────────────────
   function isImage(name) { return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(name); }
   function fileIcon(name) {
     if (/\.py$/i.test(name))   return '🐍';
@@ -473,15 +589,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const div  = document.createElement('div');
     const isMe = currentUser && currentUser.handle === msg.userHandle;
 
-    // Determine message class
     let cls = 'msg';
-    if (msg.type === 'server')       cls += ' server';
+    if      (msg.type === 'server')       cls += ' server';
     else if (msg.type === 'banned-notice') cls += ' banned-notice';
-    else if (isMe)                   cls += ' me';
+    else if (msg.type === 'muted-notice') cls += ' muted-notice';
+    else if (isMe)                        cls += ' me';
     div.className = cls;
 
     const time = msg.time ? new Date(msg.time).toLocaleTimeString() : '';
-    let body = msg.text ? msg.text : '';
+    let body = msg.text || '';
 
     if (msg.fileURL && msg.fileName) {
       if (isImage(msg.fileName)) {
@@ -491,42 +607,43 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Header line — server messages have no handle
     const adminBadge = msg.isAdmin ? ' <span class="admin-tag">ADMIN</span>' : '';
-    const headerLine = msg.type === 'server' || msg.type === 'banned-notice'
+    const headerLine = (msg.type === 'server' || msg.type === 'banned-notice' || msg.type === 'muted-notice')
       ? `<strong>${msg.userName}</strong>`
       : `<strong>${msg.userName}</strong>${adminBadge} <span style="color:#9aa6bd;font-size:0.8em">${msg.userHandle}</span>`;
 
     div.innerHTML = `${headerLine}<br>${body}<br><small style="color:#9aa6bd">${time}</small>`;
 
-    // Admin controls: delete button on every message, ban button on user messages
-    if (currentUser && currentUser.admin) {
-      if (msg.type !== 'server' && msg.type !== 'banned-notice') {
-        const banBtn = document.createElement('button');
-        banBtn.className = 'ban-btn';
-        banBtn.textContent = 'Ban';
-        banBtn.onclick = () => {
-          banTargetData = { uid: msg.userUid || null, name: msg.userName, handle: msg.userHandle };
-          banTarget.textContent = `Ban ${msg.userName} (${msg.userHandle})?`;
-          banReason.value = '';
-          banPop.style.display = 'block';
-        };
-        div.appendChild(banBtn);
-      }
+    // Admin controls
+    if (currentUser && currentUser.admin && msg.type !== 'server' && msg.type !== 'banned-notice' && msg.type !== 'muted-notice') {
+      const banBtn = document.createElement('button');
+      banBtn.className   = 'ban-btn';
+      banBtn.textContent = 'Ban';
+      banBtn.onclick = () => {
+        banTargetData = { uid: msg.userUid || null, name: msg.userName, handle: msg.userHandle };
+        banTarget.textContent = `Ban ${msg.userName} (${msg.userHandle})?`;
+        banReason.value = '';
+        banPop.style.display = 'block';
+      };
+      div.appendChild(banBtn);
+    }
 
+    if (currentUser && currentUser.admin) {
       const delBtn = document.createElement('button');
-      delBtn.className = 'del-btn';
+      delBtn.className   = 'del-btn';
       delBtn.textContent = 'Delete';
       delBtn.onclick = async () => {
-        if (confirm(`Delete this message?`)) {
-          await db.ref('messages/' + key).remove();
-          div.remove();
+        if (!confirm('Delete this message?')) return;
+        // FIX: also delete the file from Storage if one is attached
+        if (msg.storagePath) {
+          try { await storage.ref(msg.storagePath).delete(); } catch (e) { /* file may already be gone */ }
         }
+        await db.ref('messages/' + key).remove();
+        div.remove();
       };
       div.appendChild(delBtn);
     }
 
-    // Lightbox for images
     const img = div.querySelector('.msg-image');
     if (img) {
       img.addEventListener('click', () => {
@@ -546,22 +663,23 @@ document.addEventListener('DOMContentLoaded', () => {
     db.ref('messages').on('child_added', snap => renderMessage(snap.key, snap.val()));
   }
 
-  // ── Send message ─────────────────────────────────────
+  // ── Send message ──────────────────────────────────────
   async function sendMessage() {
     const text = msgInput.value.trim();
     if (!text && !selectedFile) return;
-    if (!currentUser) return;
+    if (!currentUser || currentUser.muted) return;
 
     sendBtn.disabled   = true;
     uploadBtn.disabled = true;
 
-    let fileURL  = null;
-    let fileName = null;
+    let fileURL     = null;
+    let fileName    = null;
+    let storagePath = null;
 
     if (selectedFile) {
-      const path = `uploads/${currentUser.uid}/${Date.now()}_${selectedFile.name}`;
-      const ref  = storage.ref(path);
-      const task = ref.put(selectedFile);
+      storagePath = `uploads/${currentUser.uid}/${Date.now()}_${selectedFile.name}`;
+      const ref   = storage.ref(storagePath);
+      const task  = ref.put(selectedFile);
       activeUpload    = task;
       uploadCancelled = false;
       uploadProgress.style.display = 'block';
@@ -590,19 +708,20 @@ document.addEventListener('DOMContentLoaded', () => {
       activeUpload = null;
       uploadProgress.style.display = 'none';
       filePreview.style.display    = 'none';
-      selectedFile = null;
+      selectedFile    = null;
       fileInput.value = '';
     }
 
     await db.ref('messages').push({
-      userName:   currentUser.name,
-      userHandle: currentUser.handle,
-      userUid:    currentUser.uid,
-      isAdmin:    currentUser.admin || false,
-      text:       text || '',
-      fileURL:    fileURL  || null,
-      fileName:   fileName || null,
-      time:       new Date().toISOString()
+      userName:    currentUser.name,
+      userHandle:  currentUser.handle,
+      userUid:     currentUser.uid,
+      isAdmin:     currentUser.admin || false,
+      text:        text || '',
+      fileURL:     fileURL     || null,
+      fileName:    fileName    || null,
+      storagePath: storagePath || null,   // saved so delete can clean up Storage
+      time:        new Date().toISOString()
     });
 
     msgInput.value     = '';
@@ -613,21 +732,21 @@ document.addEventListener('DOMContentLoaded', () => {
   sendBtn.addEventListener('click', sendMessage);
   msgInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
 
-  // ── Auth state ───────────────────────────────────────
+  // ── Auth state ────────────────────────────────────────
   firebase.auth().onAuthStateChanged(async user => {
     if (user && user.emailVerified) {
       try {
         const snap    = await db.ref('users/' + user.uid).once('value');
         const profile = snap.val();
-
         currentUser = {
           uid:    user.uid,
           name:   profile ? profile.name   : user.email,
           handle: profile ? profile.handle : user.email,
-          admin:  profile ? !!profile.admin : false
+          admin:  profile ? !!profile.admin : false,
+          muted:  profile ? !!profile.muted  : false
         };
       } catch {
-        currentUser = { uid: user.uid, name: user.email, handle: user.email, admin: false };
+        currentUser = { uid: user.uid, name: user.email, handle: user.email, admin: false, muted: false };
       }
     } else {
       if (user && !user.emailVerified) {
