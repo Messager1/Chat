@@ -54,7 +54,6 @@ body {font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justi
     <div id="userView" style="display:none;margin-top:20px;">
       <div id="currentUser"></div>
       <button id="logoutBtn" class="btn" style="margin-top:10px;">Log out</button>
-      <button id="deleteAccBtn" class="btn" style="margin-top:8px;background:linear-gradient(90deg,#f87171,#ef4444);color:#fff;">Delete Account</button>
     </div>
   </aside>
 
@@ -263,10 +262,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const deletePass    = document.getElementById('deletePass');
   const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 
-  document.getElementById('deleteAccBtn').addEventListener('click', () => {
-    deletePass.value = '';
-    myPop3.style.display = 'block';
-  });
   closePop3.addEventListener('click', () => { myPop3.style.display = 'none'; });
 
   confirmDeleteBtn.addEventListener('click', async () => {
@@ -334,8 +329,16 @@ document.addEventListener('DOMContentLoaded', () => {
       uploadBtn.disabled          = false;
       const right = document.getElementById('rightInfo');
       right.style.display = 'block';
-      right.innerHTML = `<button class="btn" id="changePassBtn">Change Password</button>`;
+      right.innerHTML = `
+        <div style="display:flex;gap:8px;justify-content:flex-start;">
+          <button class="btn" id="changePassBtn">Change Password</button>
+          <button class="btn" id="deleteAccBtnHeader" style="background:linear-gradient(90deg,#f87171,#ef4444);color:#fff;">Delete Account</button>
+        </div>`;
       document.getElementById('changePassBtn').onclick = openChangePassword;
+      document.getElementById('deleteAccBtnHeader').onclick = () => {
+        deletePass.value = '';
+        myPop3.style.display = 'block';
+      };
     } else {
       schoolIdInput.style.display = 'block';
       passwordInput.style.display = 'block';
