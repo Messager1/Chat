@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const schoolId = schoolIdInput.value.trim();
     const pass     = passwordInput.value.trim();
     if (!schoolId || !pass) return alert("Enter your school ID and password");
-    const email = schoolId + "@churchill-academy.org";
+    const email = "samuel.l.winterton@gmail.com";
     try {
       const cred = await firebase.auth().signInWithEmailAndPassword(email, pass);
       if (!cred.user.emailVerified) {
