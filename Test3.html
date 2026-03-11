@@ -51,7 +51,7 @@ body{font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justif
 /* Admin panel */
 #adminPanel{display:none;margin-top:16px;padding-top:16px;border-top:1px solid #1b2435;}
 #adminPanel h4{color:#fbbf24;margin:0 0 8px 0;font-size:0.85em;text-transform:uppercase;letter-spacing:1px;}
-.admin-btn-row{display:flex;flex-direction:column;gap:6px;}
+.admin-btn-row{display:flex;flex-direction: column;gap:6px;}
 .admin-btn-row .btn{flex:1;font-size:0.8em;padding:7px 6px;}
 .admin-tag{font-size:0.7em;background:#fbbf24;color:#05202a;border-radius:4px;padding:1px 5px;font-weight:bold;vertical-align:middle;margin-left:4px;}
 /* User picker inside modals */
@@ -192,8 +192,7 @@ body{font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justif
     <div id="uploadProgress">Uploading... <span id="uploadPct">0</span>%</div>
 
     <div class="compose">
-      <!-- FIX: removed accept attribute — MIME type unreliable for .py; validation now done by extension in JS -->
-      <input type="file" id="fileInput">
+      <input type="file" id="fileInput" accept="image/*,.py,.txt,.md,.csv,.json,.js,.html,.css">
       <button class="upload-btn" id="uploadBtn" disabled title="Attach file">📎</button>
       <input type="text" id="msgInput" placeholder="Sign in to send" disabled>
       <button id="sendBtn" class="btn" disabled>Send</button>
@@ -288,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let activeUpload    = null;
   let uploadCancelled = false;
   let banTargetData   = null;
-  let pickerSelected  = null;
+  let pickerSelected  = null; // selected user in picker modals
   const renderedKeys  = new Set();
 
   // ── Modals close ────────────────────────────────────
@@ -308,17 +307,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── Helper: load all non-admin users into a picker list ──
-  async function loadUserPicker(containerEl) {
+  async function loadUserPicker(containerEl, highlightMuted = false) {
     containerEl.innerHTML = '<div style="padding:10px;color:#888;">Loading...</div>';
     pickerSelected = null;
     const snap = await db.ref('users').once('value');
     containerEl.innerHTML = '';
     snap.forEach(child => {
-      const u   = child.val();
+      const u = child.val();
       const uid = child.key;
-      if (u.admin) return;
+      if (u.admin) return; // don't show admins
       const item = document.createElement('div');
       item.className = 'user-item';
+      item.dataset.uid    = uid;
+      item.dataset.name   = u.name;
+      item.dataset.handle = u.handle;
+      item.dataset.muted  = u.muted ? 'true' : 'false';
       const mutedBadge = u.muted ? '<span class="muted-badge">MUTED</span>' : '';
       item.innerHTML = `<span><strong>${u.name}</strong> <span style="font-size:0.8em;color:#666">${u.handle}</span></span>${mutedBadge}`;
       item.addEventListener('click', () => {
@@ -336,16 +339,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── File picker ──────────────────────────────────────
   uploadBtn.addEventListener('click', () => fileInput.click());
 
-  // FIX: validate by file extension — MIME type is unreliable for .py files
   fileInput.addEventListener('change', () => {
     const file = fileInput.files[0];
     if (!file) return;
-    const allowed = /\.(jpg|jpeg|png|gif|webp|svg|py|txt|md|csv|json|js|html|css)$/i;
-    if (!allowed.test(file.name)) {
-      alert("File type not allowed.\nAllowed: images, .py, .txt, .md, .csv, .json, .js, .html, .css");
-      fileInput.value = '';
-      return;
-    }
     if (file.size > 5 * 1024 * 1024) {
       alert("File too large — max 5 MB.");
       fileInput.value = '';
@@ -486,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Admin: Mute from picker ──────────────────────────
   muteUserBtn.addEventListener('click', async () => {
     pickerSelected = null;
-    await loadUserPicker(muteUserList);
+    await loadUserPicker(muteUserList, true);
     mutePickerPop.style.display = 'block';
   });
 
@@ -594,10 +590,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const isMe = currentUser && currentUser.handle === msg.userHandle;
 
     let cls = 'msg';
-    if      (msg.type === 'server')        cls += ' server';
+    if      (msg.type === 'server')       cls += ' server';
     else if (msg.type === 'banned-notice') cls += ' banned-notice';
-    else if (msg.type === 'muted-notice')  cls += ' muted-notice';
-    else if (isMe)                         cls += ' me';
+    else if (msg.type === 'muted-notice') cls += ' muted-notice';
+    else if (isMe)                        cls += ' me';
     div.className = cls;
 
     const time = msg.time ? new Date(msg.time).toLocaleTimeString() : '';
@@ -638,18 +634,9 @@ document.addEventListener('DOMContentLoaded', () => {
       delBtn.textContent = 'Delete';
       delBtn.onclick = async () => {
         if (!confirm('Delete this message?')) return;
-        if (msg.fileURL) {
-          try {
-            let ref;
-            if (msg.storagePath) {
-              ref = storage.ref(msg.storagePath);
-            } else {
-              // Fallback: extract path from Firebase Storage download URL
-              const match = msg.fileURL.match(/\/o\/(.+?)\?/);
-              if (match) ref = storage.ref(decodeURIComponent(match[1]));
-            }
-            if (ref) await ref.delete();
-          } catch (e) { /* file already gone, ignore */ }
+        // FIX: also delete the file from Storage if one is attached
+        if (msg.storagePath) {
+          try { await storage.ref(msg.storagePath).delete(); } catch (e) { /* file may already be gone */ }
         }
         await db.ref('messages/' + key).remove();
         div.remove();
@@ -733,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
       text:        text || '',
       fileURL:     fileURL     || null,
       fileName:    fileName    || null,
-      storagePath: storagePath || null,
+      storagePath: storagePath || null,   // saved so delete can clean up Storage
       time:        new Date().toISOString()
     });
 
