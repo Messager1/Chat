@@ -370,7 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       // Post a ban notice in chat
       await db.ref('messages').push({
-        userName:   '⚙ Server Message',
+        userName:   '⚙ Server',
         userHandle: '',
         text:       `🚫 ${banTargetData.name} has been banned.${reason ? ' Reason: ' + reason : ''}`,
         type:       'banned-notice',
@@ -393,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!text) return alert("Enter a message.");
     try {
       await db.ref('messages').push({
-        userName:   '⚙ Server',
+        userName:   '⚙ Server Message',
         userHandle: '',
         text:       `📢 ${text}`,
         type:       'server',
