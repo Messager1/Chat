@@ -157,8 +157,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const newPass        = document.getElementById('newPass');
   const changePassBtn2 = document.getElementById('changePassBtn2');
 
-  let currentUser  = null;
-  let selectedFile = null;
+  let currentUser    = null;
+  let selectedFile   = null;
+  let activeUpload   = null;  // holds the current upload task so we can cancel it
+  let uploadCancelled = false;
   const renderedKeys = new Set();
 
   // Modals
@@ -189,9 +191,18 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   clearFileBtn.addEventListener('click', () => {
+    // If an upload is in progress, cancel it
+    if (activeUpload) {
+      activeUpload.cancel();
+      activeUpload = null;
+    }
+    uploadCancelled = true;
     selectedFile = null;
     fileInput.value = '';
-    filePreview.style.display = 'none';
+    filePreview.style.display    = 'none';
+    uploadProgress.style.display = 'none';
+    sendBtn.disabled   = false;
+    uploadBtn.disabled = false;
   });
 
   // Sign-up
@@ -354,6 +365,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const path = `uploads/${currentUser.uid}/${Date.now()}_${selectedFile.name}`;
       const ref  = storage.ref(path);
       const task = ref.put(selectedFile);
+      activeUpload    = task;
+      uploadCancelled = false;
 
       uploadProgress.style.display = 'block';
 
@@ -365,16 +378,27 @@ document.addEventListener('DOMContentLoaded', () => {
             resolve
           );
         });
+
+        // If user hit X during upload, bail out — don't write to DB
+        if (uploadCancelled) {
+          uploadProgress.style.display = 'none';
+          sendBtn.disabled   = false;
+          uploadBtn.disabled = false;
+          return;
+        }
+
         fileURL  = await ref.getDownloadURL();
         fileName = selectedFile.name;
       } catch (err) {
-        alert("Upload failed: " + err.message);
         uploadProgress.style.display = 'none';
         sendBtn.disabled   = false;
         uploadBtn.disabled = false;
+        // If cancelled by user, don't show an error
+        if (!uploadCancelled) alert("Upload failed: " + err.message);
         return;
       }
 
+      activeUpload                  = null;
       uploadProgress.style.display  = 'none';
       filePreview.style.display     = 'none';
       selectedFile = null;
