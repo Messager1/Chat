@@ -31,7 +31,7 @@ body {font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justi
 <div class="wrap">
   <aside class="panel">
     <h2 id="Instruct">Sign Up / Login</h2>
-    <input type="text" id="usernameInput" placeholder="Username...">
+    <input type="number" id="schoolIdInput" placeholder="School ID...">
     <input type="password" id="passwordInput" placeholder="Password...">
     <button id="loginBtn" class="btn">Login</button>
     <button id="signupBtn" class="btn">Sign Up</button>
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const db = firebase.database();
 
   // Elements
-  const usernameInput = document.getElementById('usernameInput');
+  const schoolIdInput = document.getElementById('schoolIdInput');
   const passwordInput = document.getElementById('passwordInput');
   const loginBtn      = document.getElementById('loginBtn');
   const signupBtn     = document.getElementById('signupBtn');
@@ -179,32 +179,25 @@ document.addEventListener('DOMContentLoaded', () => {
   // FIX: removed silent auto-create on login (accounts must be made via Sign Up)
   // -------------------
   loginBtn.addEventListener('click', async () => {
-    const name = usernameInput.value.trim();
-    const pass  = passwordInput.value.trim();
-    if (!name || !pass) return alert("Enter your username and password");
+    const schoolId = schoolIdInput.value.trim();
+    const pass     = passwordInput.value.trim();
+    if (!schoolId || !pass) return alert("Enter your school ID and password");
 
-    // Look up the email stored in the DB for this username
-    let email = null;
-    try {
-      const snap = await db.ref('users').orderByChild('name').equalTo(name).once('value');
-      if (!snap.exists()) return alert("Username not found. Please sign up first.");
-      snap.forEach(child => { email = child.val().handle; });
-    } catch (err) {
-      return alert("Error looking up user: " + err.message);
-    }
+    const email = schoolId + "@churchill-academy.org";
 
     try {
       const cred = await firebase.auth().signInWithEmailAndPassword(email, pass);
       const user  = cred.user;
-
       if (!user.emailVerified) {
         await firebase.auth().signOut();
         return alert("Please verify your email before logging in.");
       }
-      // onAuthStateChanged will handle setting currentUser + updateUI
+      // onAuthStateChanged handles setting currentUser + updateUI
     } catch (err) {
       if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
         alert("Incorrect password.");
+      } else if (err.code === 'auth/user-not-found') {
+        alert("No account found for that school ID. Please sign up first.");
       } else {
         alert(err.message);
       }
@@ -246,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------
   function updateUI() {
     if (currentUser) {
-      usernameInput.style.display = 'none';
+      schoolIdInput.style.display = 'none';
       passwordInput.style.display = 'none';
       signupBtn.style.display     = 'none';
       loginBtn.style.display      = 'none';
@@ -262,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
       right.innerHTML = `<button class="btn" id="changePassBtn">Change Password</button>`;
       document.getElementById('changePassBtn').onclick = openChangePassword;
     } else {
-      usernameInput.style.display = 'block';
+      schoolIdInput.style.display = 'block';
       passwordInput.style.display = 'block';
       signupBtn.style.display     = 'inline-block';
       loginBtn.style.display      = 'inline-block';
