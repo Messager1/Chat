@@ -382,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Delete the auth account if they never verify — clean up unverified orphans
       // We sign out immediately; they must verify before the DB profile is created
       await firebase.auth().signOut();
-      alert("Account created! Check your school email to verify before logging in.");
+      alert("Check your SPAM Folder if you can't find the email!!");
       myPop2.style.display = "none";
       username1.value = ''; password1.value = ''; num1.value = '';
     } catch (err) { alert(err.message); }
