@@ -3,9 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Site Closed</title>
+<title>CompSci Chat Closed</title>
 
 <style>
+
+*{
+    box-sizing:border-box;
+}
+
 body{
     font-family:sans-serif;
     background:#0f1724;
@@ -13,13 +18,13 @@ body{
     display:flex;
     justify-content:center;
     align-items:center;
-    height:100vh;
+    min-height:100vh;
     margin:0;
-    overflow:hidden;
+    padding:20px;
 }
 
 .container{
-    width:90%;
+    width:100%;
     max-width:700px;
     background:#121b2e;
     border:1px solid #1b2435;
@@ -61,6 +66,7 @@ h1{
     border-left:4px solid #fbbf24;
     color:#fde68a;
     text-align:left;
+    line-height:1.6;
 }
 
 .footer{
@@ -79,13 +85,16 @@ h1{
     font-weight:bold;
     cursor:pointer;
     transition:0.2s;
+    font-size:1rem;
 }
 
 .btn:hover{
     opacity:0.9;
     transform:translateY(-2px);
 }
-    
+
+/* Mobile */
+
 @media (max-width: 600px){
 
     .container{
@@ -101,6 +110,10 @@ h1{
         font-size:55px;
     }
 
+    .subtitle{
+        font-size:1rem;
+    }
+
     .message,
     .notice{
         font-size:0.95rem;
@@ -111,6 +124,7 @@ h1{
         width:100%;
     }
 }
+
 </style>
 </head>
 
@@ -123,23 +137,27 @@ h1{
     <h1>CompSci Chat Closed</h1>
 
     <div class="subtitle">
-        Farewell from CompSci chat team (Sam)
+        Farewell from the CompSci Chat team (Sam)
     </div>
 
     <div class="message">
-        Thank you to all computer scientists who used the platform, chatted,
-        shared memories, and supported the project. (Exept Otis)
+        Thank you to everyone who used the platform, chatted,
+        shared memories, and supported the project.
         <br><br>
-        Chats, images and accounts have all been safely deleted. All data has been dealt with in accordance with "The Data Protection Act of 2018".
+        Chats, images, and accounts have all been safely deleted.
+        All data has been handled in accordance with the Data Protection Act 2018.
     </div>
 
     <div class="notice">
-        We truly appreciate all the users who were part of the community.
+        We truly appreciate everyone who was part of the community.
         This project has come to an end, but we're grateful for everyone
-        who spent time here. Btw WSHG is still up - PLEASE PLAY ITTT!
+        who spent time here.
+        <br><br>
+        WSHG is still online — go play it!
     </div>
 
-    <button class="btn" onclick="window.location.href='https://code-318.github.io/WorldsSecondHardest/Game.html'">
+    <button class="btn"
+        onclick="window.location.href='https://code-318.github.io/WorldsSecondHardest/Game.html'">
         Visit WSHG
     </button>
 
