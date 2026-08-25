@@ -72,7 +72,7 @@ body{font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justif
 <div class="wrap">
   <aside class="panel">
     <h2 id="Instruct">Sign Up / Login</h2>
-    <input type="number" id="schoolIdInput" placeholder="School ID...">
+    <input type="text" id="emailInput" placeholder="Email...">
     <input type="password" id="passwordInput" placeholder="Password...">
     <button id="loginBtn" class="btn">Login</button>
     <button id="signupBtn" class="btn">Sign Up</button>
@@ -110,7 +110,7 @@ body{font-family:sans-serif;background:#0f1724;color:#e6eef6;display:flex;justif
       <h2>Create Account</h2><br>
       <input type="text" id="username1" placeholder="Enter a username" style="width:90%;height:30px;" maxlength="18"><br><br>
       <input type="password" id="password1" placeholder="Enter a password" style="width:90%;height:30px;"><br><br>
-      <input type="number" id="num1" placeholder="Enter school ID" style="width:90%;height:30px;"><br><br>
+      <input type="text" id="email1" placeholder="Input your Email" style="width:90%;height:30px;"><br><br>
       <button class="btn" id="signupBtn2">Sign Up</button>
     </div>
   </div>
@@ -219,7 +219,7 @@ const firebaseConfig = {
   const storage = firebase.storage();
 
   // ── Element refs ─────────────────────────────────────
-  const schoolIdInput       = document.getElementById('schoolIdInput');
+  const emailInput       = document.getElementById('emailInput');
   const passwordInput       = document.getElementById('passwordInput');
   const loginBtn            = document.getElementById('loginBtn');
   const signupBtn           = document.getElementById('signupBtn');
@@ -246,7 +246,7 @@ const firebaseConfig = {
   const closePop2           = document.getElementById('closePop2');
   const username1           = document.getElementById('username1');
   const password1           = document.getElementById('password1');
-  const num1                = document.getElementById('num1');
+  const email1                = document.getElementById('email1');
   const signupBtn2          = document.getElementById('signupBtn2');
 
   const myPop               = document.getElementById('myPop');
@@ -373,9 +373,9 @@ const firebaseConfig = {
   signupBtn2.addEventListener('click', async () => {
     const u = username1.value.trim();
     const p = password1.value.trim();
-    const n = num1.value.trim();
+    const n = email1.value.trim();
     if (!u || !p || !n) return alert("Fill all fields");
-    const email = n + "@churchill-academy.org";
+    const email = n;
     try {
       const cred = await firebase.auth().createUserWithEmailAndPassword(email, p);
       // Save username in displayName — DB profile only written after email is verified
@@ -386,16 +386,16 @@ const firebaseConfig = {
       await firebase.auth().signOut();
       alert("Check your SPAM Folder if you can't find the email!!");
       myPop2.style.display = "none";
-      username1.value = ''; password1.value = ''; num1.value = '';
+      username1.value = ''; password1.value = ''; email1.value = '';
     } catch (err) { alert(err.message); }
   });
 
   // ── Login ────────────────────────────────────────────
   loginBtn.addEventListener('click', async () => {
-    const schoolId = schoolIdInput.value.trim();
+    const email2 = emailInput.value.trim();
     const pass     = passwordInput.value.trim();
-    if (!schoolId || !pass) return alert("Enter your school ID and password");
-    const email = schoolId + "@churchill-academy.org";
+    if (!schoolId || !pass) return alert("Enter your email and password");
+    const email = email2;
     try {
       const cred = await firebase.auth().signInWithEmailAndPassword(email, pass);
       if (!cred.user.emailVerified) {
@@ -536,7 +536,7 @@ const firebaseConfig = {
   // ── UI update ─────────────────────────────────────────
   function updateUI() {
     if (currentUser) {
-      schoolIdInput.style.display = 'none';
+      emailInput.style.display = 'none';
       passwordInput.style.display = 'none';
       signupBtn.style.display     = 'none';
       loginBtn.style.display      = 'none';
@@ -564,7 +564,7 @@ const firebaseConfig = {
         myPop3.style.display = 'block';
       };
     } else {
-      schoolIdInput.style.display = 'block';
+      emailInput.style.display = 'block';
       passwordInput.style.display = 'block';
       signupBtn.style.display     = 'inline-block';
       loginBtn.style.display      = 'inline-block';
